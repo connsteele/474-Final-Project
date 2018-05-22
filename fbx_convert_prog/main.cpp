@@ -240,7 +240,11 @@ int Board::moveCharacter(int charX, int charY, int destX, int destY) {
     // implementation needed
     // check if character exists at that (charX,charY)
     // if character exists
-        // check 
+        // check if destination point has a character
+        // if has character
+            // just print something right now, or do something that shows that there will be a detection when selecting (start fight)
+        // if not have character
+            // move current character to dest
 }
 
 Board board;
