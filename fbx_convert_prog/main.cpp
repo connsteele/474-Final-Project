@@ -235,6 +235,7 @@ int Board::checkWin() {
     // returns 0 if player 1 wins, 1 if player 2 wins
     // check number of units on each team
     // if either team number of units = 0, declare victory for other team
+	return 0; //temp
 }
 
 void Board::convertCharToPhysicalCoordinates() {
@@ -258,6 +259,7 @@ void Board::convertCharToPhysicalCoordinates() {
 // Character management methods
 int Board::addCharacter(Character c, int x, int y) {
     // returns 1 if character is added successfully (i.e. no other unit exists in the same position), otherwise 0
+	return 0; //temp
 }
 
 
@@ -283,6 +285,7 @@ int Board::moveCharacter(int charX, int charY, int destX, int destY) {
     // just print something right now, or do something that shows that there will be a detection when selecting (start fight)
     // if not have character
     // move current character to dest
+	return 0; //temp
 }
 
 void Board::removeCharacter(int x, int y) {
@@ -292,6 +295,7 @@ void Board::removeCharacter(int x, int y) {
 
 int Board::startFight(Character a, Character b) {
     // return 0 if a wins, returns 1 if b wins
+	return 0; //temp
 }
 
 // Extraneous methods
@@ -564,7 +568,9 @@ public:
         for (int i = 0; i < mapHeight; i++) {
             charPos.at(i).resize(10);
         }
-        board = Board(mapBlocks, charPos, mapWidth, mapHeight);
+		vector<vector<Character>> team1, team2;
+
+        board = Board(mapBlocks, team1, team2, charPos, mapWidth, mapHeight);
 
         //charPos.at(0).at(1) = 10;
 	}
