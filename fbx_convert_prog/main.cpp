@@ -193,11 +193,16 @@ public:
     Board(vector<vec3> blockPos, vector<vector<Character>> charsPos, int width, int height);
     
     // Board methods
+    // -----------------
+    // character management methods
+    int hasCharacter(int x, int y);
     Character getCharacter(int x, int y);
-    int checkPosition(int x, int y);
+    int moveCharacter(int charX, int charY, int destX, int destY);
     void removeCharacter(int x, int y);
+    // extraneous methods
     int getBoardWidth();
     int getBoardHeight();
+    
 };
 
 Board::Board() {}
@@ -212,7 +217,7 @@ Character Board::getCharacter(int x, int y) {
     return charPos.at(x).at(y);
 }
 
-int Board::checkPosition(int x, int y) {
+int Board::hasCharacter(int x, int y) {
     if (charPos.at(x).at(y).isCharacter == NULL) {
         return 0;
     }
@@ -229,6 +234,13 @@ int Board::getBoardWidth() {
 
 int Board::getBoardHeight() {
     return boardHeight;
+}
+
+int Board::moveCharacter(int charX, int charY, int destX, int destY) {
+    // implementation needed
+    // check if character exists at that (charX,charY)
+    // if character exists
+        // check 
 }
 
 Board board;
