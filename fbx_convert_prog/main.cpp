@@ -182,69 +182,125 @@ Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shiel
 
 class Board {
 public:
+    // Board properties
     int boardWidth;
     int boardHeight;
-    // Map foundation blocks
+
+    // Rendered Positions
     vector<vec3> mapBlocks;
+    vector<int> characterIndices;
+    vector<vec3> spritePositions;
 
     // Character Positions
-    vector<vector<Character>> charPos;
+    vector<vector<Character>> team1Pos;
+    vector<vector<Character>> team2Pos;
+    vector<vector<Character>> allCharPos;
+
+    // Constructors
     Board();
-    Board(vector<vec3> blockPos, vector<vector<Character>> charsPos, int width, int height);
+    Board(vector<vec3> blockPos, vector<vector<Character>> team1, vector<vector<Character>> team2, vector<vector<Character>> charsPos, int width, int height);
     
     // Board methods
-    // -----------------
-    // character management methods
+    int checkWin();
+    void convertCharToPhysicalCoordinates();
+
+    // Character management methods
+    int addCharacter(Character c, int x, int y);
     int hasCharacter(int x, int y);
     Character getCharacter(int x, int y);
     int moveCharacter(int charX, int charY, int destX, int destY);
     void removeCharacter(int x, int y);
-    // extraneous methods
+    int startFight(Character a, Character b); 
+
+    // Extraneous methods
     int getBoardWidth();
     int getBoardHeight();
     
 };
 
+// Constructors
 Board::Board() {}
-Board::Board(vector<vec3> blockPos, vector<vector<Character>> charsPos, int width, int height) {
+
+Board::Board(vector<vec3> blockPos, vector<vector<Character>> team1, vector<vector<Character>> team2, vector<vector<Character>> charsPos, int width, int height) {
     mapBlocks = blockPos;
-    charPos = charsPos;
+    allCharPos = charsPos;
     boardWidth = width;
     boardHeight = height;
+    team1Pos = team1;
+    team2Pos = team2;
 }
 
-Character Board::getCharacter(int x, int y) {
-    return charPos.at(x).at(y);
+// Board methods
+int Board::checkWin() {
+    // returns 0 if player 1 wins, 1 if player 2 wins
+    // check number of units on each team
+    // if either team number of units = 0, declare victory for other team
 }
+
+void Board::convertCharToPhysicalCoordinates() {
+    // uses the 2D array of character positions and sets the character indices array
+    // used to get the correct position to draw each character
+    int counter = 0;
+    vector<int> characterIndices;
+    vector<Character> characters;
+    for (int i = 0; i < boardWidth; i++) {
+        for (int j = 0; j < boardHeight; j++) {
+            if (hasCharacter(i, j)) {
+                characterIndices.push_back(counter); // gets indices of 2D and puts it into 1D array
+                // TODO: convert to vec3 positions above each grid square and store in spritePositions
+            }
+            counter++;
+        }
+    }
+
+}
+
+// Character management methods
+int Board::addCharacter(Character c, int x, int y) {
+    // returns 1 if character is added successfully (i.e. no other unit exists in the same position), otherwise 0
+}
+
 
 int Board::hasCharacter(int x, int y) {
-    if (charPos.at(x).at(y).isCharacter == NULL) {
+    // returns 1 if a character exists at x,y, otherwise 0
+    if (allCharPos.at(x).at(y).isCharacter == NULL) {
         return 0;
     }
     return 1;
 }
 
-void Board::removeCharacter(int x, int y) {
-    charPos.at(x).at(y).isCharacter = 0;
-}
-
-int Board::getBoardWidth() {
-    return boardWidth;
-}
-
-int Board::getBoardHeight() {
-    return boardHeight;
+Character Board::getCharacter(int x, int y) {
+    // returns character at x,y
+    return allCharPos.at(x).at(y);
 }
 
 int Board::moveCharacter(int charX, int charY, int destX, int destY) {
     // implementation needed
     // check if character exists at that (charX,charY)
     // if character exists
-        // check if destination point has a character
-        // if has character
-            // just print something right now, or do something that shows that there will be a detection when selecting (start fight)
-        // if not have character
-            // move current character to dest
+    // check if destination point has a character
+    // if has character
+    // just print something right now, or do something that shows that there will be a detection when selecting (start fight)
+    // if not have character
+    // move current character to dest
+}
+
+void Board::removeCharacter(int x, int y) {
+    // deletes character at that position
+    allCharPos.at(x).at(y).isCharacter = 0;
+}
+
+int Board::startFight(Character a, Character b) {
+    // return 0 if a wins, returns 1 if b wins
+}
+
+// Extraneous methods
+int Board::getBoardWidth() {
+    return boardWidth;
+}
+
+int Board::getBoardHeight() {
+    return boardHeight;
 }
 
 Board board;
