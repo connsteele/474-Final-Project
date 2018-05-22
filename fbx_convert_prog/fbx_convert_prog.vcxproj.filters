@@ -85,5 +85,8 @@
     <None Include="..\resources\brick_vertex.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="packages.config" />
+    <None Include="..\resources\plane_vertex.glsl" />
+    <None Include="..\resources\plane_frag.glsl" />
   </ItemGroup>
 </Project>

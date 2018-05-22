@@ -16,8 +16,8 @@ vec3 frag_norm = normalize(vertex_normal);
 
 float diffuse_fact = clamp(dot(lightdir,frag_norm),0,1);
 
-vec3 half = normalize(camdir + lightdir);
-float spec_fact = clamp(dot(half,frag_norm),0,1);
+vec3 h = normalize(camdir + lightdir);
+float spec_fact = clamp(dot(h,frag_norm),0,1);
 
 //vec4 tcol = texture(tex, vertex_tex);
 //color = tcol;
