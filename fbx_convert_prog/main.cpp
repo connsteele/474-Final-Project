@@ -277,15 +277,29 @@ Character Board::getCharacter(int x, int y) {
 }
 
 int Board::moveCharacter(int charX, int charY, int destX, int destY) {
-    // implementation needed
-    // check if character exists at that (charX,charY)
-    // if character exists
-    // check if destination point has a character
-    // if has character
-    // just print something right now, or do something that shows that there will be a detection when selecting (start fight)
-    // if not have character
-    // move current character to dest
-	return 0; //temp
+	// implementation needed
+	// check if character exists at that (charX,charY)
+	if (hasCharacter(charX, charY) == 1) {
+		// if character exists
+		// check if destination point has a character
+		if (hasCharacter(destX, destY) == 1) {
+			// if has character
+			cout << "THERE WILL BE BLOOD" << endl;
+			// just print something right now, or do something that shows that there will be a detection when selecting (start fight)
+			return 1;
+		}
+		else {
+			// if not have character
+			// move current character to dest
+			allCharPos.at(destX).at(destY) = getCharacter(charX, charY);
+			removeCharacter(charX, charY);
+			if (hasCharacter(charX, charY) != 0) {
+				cout << "error removing character" << endl;
+			}
+			return 1;
+		}
+	}
+	return 0;
 }
 
 void Board::removeCharacter(int x, int y) {
