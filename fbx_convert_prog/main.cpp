@@ -141,7 +141,8 @@ public:
         dir = dir * R;
         pos += glm::vec3(dir.x, dir.y, dir.z);
         glm::mat4 T = glm::translate(glm::mat4(1), pos);
-        return R * T;
+		glm::mat4 Rx = glm::rotate(glm::mat4(1), rot.x, glm::vec3(1, 0, 0)); //Tilt the camera on x-axis based on rot.x, set in initGeom
+        return Rx * R * T;
     }
 };
 
@@ -459,6 +460,10 @@ public:
 		
 		readtobone("test.fbx",&all_animation,&root);
 		root->set_animations(&all_animation,animmat,animmatsize);
+
+		// Initialize the Camera Position and orientation
+		mycam.pos = glm::vec3(-0.75, -10, -9); //Set initial Cam pos cented above the map plane
+		mycam.rot.x = 1; //rotate the camera to look down at the map plane
 		
 			
 		// Initialize mesh.
@@ -532,7 +537,8 @@ public:
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-        str = resourceDirectory + "/brick-img512.png";
+        //str = resourceDirectory + "/brick-img512.png";
+		str = resourceDirectory + "/TexTerrain/GrassTextureA.png";
         strcpy(filepath, str.c_str());
         data = stbi_load(filepath, &width, &height, &channels, 4);
         glGenTextures(1, &Texture3);
@@ -692,7 +698,7 @@ public:
 			totaltime_untilframe_ms = 0;
 			frame++;
 			}
-		root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation	
+		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 
 
 		// Get current frame buffer size.
