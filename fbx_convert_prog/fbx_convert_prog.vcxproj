@@ -180,6 +180,8 @@
     <None Include="..\resources\plane_vertex.glsl" />
     <None Include="..\resources\shader_fragment.glsl" />
     <None Include="..\resources\shader_vertex.glsl" />
+    <None Include="..\resources\skyfrag.glsl" />
+    <None Include="..\resources\skyvertex.glsl" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

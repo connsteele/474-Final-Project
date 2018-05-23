@@ -88,5 +88,7 @@
     <None Include="packages.config" />
     <None Include="..\resources\plane_vertex.glsl" />
     <None Include="..\resources\plane_frag.glsl" />
+    <None Include="..\resources\skyfrag.glsl" />
+    <None Include="..\resources\skyvertex.glsl" />
   </ItemGroup>
 </Project>

@@ -10,7 +10,7 @@ uniform sampler2D tex2;
 
 void main()
 {
-vec4 tcol = texture(tex, vertex_tex);
-color = tcol;
-color.gb*=0.4;
+	vec4 tcol = texture(tex, vertex_tex);
+	color = tcol;
+	//color.gb*=0.4; //old, make the texure look red
 }

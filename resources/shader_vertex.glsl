@@ -11,6 +11,9 @@ void main()
 	
 	mat4 Ma = Manim[vertimat];
 	vec4 pos = Ma*vec4(vertPos,1.0);
+	pos.x = Ma[3][0]; //these pos statements fix monster hands bone issue
+    pos.y = Ma[3][1];
+    pos.z = Ma[3][2];
 	gl_Position = P * V * M * pos;
 	
 }
