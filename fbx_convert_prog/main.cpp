@@ -404,13 +404,15 @@ public:
 				//overhead orientation
 				mycam.pos = glm::vec3(-0.75, -10, -9);
 				mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
+				mycam.rot.y = 0;
 				curcamPos = 1; //switch for next press
 			}
 			else if (curcamPos == 1)
 			{
 				//up close combat orientation
-				mycam.pos = glm::vec3(-0.75, -4, 5);
+				mycam.pos = glm::vec3(6, -3, 11);
 				mycam.rot.x = 0.3; // Camera orientaion
+				mycam.rot.y = 1;
 				curcamPos = 0; //switch for next press
 			}
 		}
@@ -810,9 +812,9 @@ public:
 		glBindTexture(GL_TEXTURE_2D, Texture);
 
 		// COMBAT DRAWING, MAKE THIS GRID DRAW A LARGE TERRAIN FOR BATTLES, CAN PUSH WHOLE COMBAT SCENE FURTHER AWAY FROM OVERHEAD SCENE IF NEEDED
-		//bones stuff
-		glm::mat4 TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
-		sangle = -3.1415926 / 2.;
+		//draw right set of bones
+		glm::mat4 TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
+		sangle = 3.1415926 / 2.;
 		glm::mat4 rotXBones = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //rotate the bones
 		glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)); //scale the bones
 		M = TransBones * rotXBones* S;
@@ -820,6 +822,18 @@ public:
 		glUniformMatrix4fv(prog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick-4);
 
+		//draw left set of bones
+		TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
+		sangle = -3.1415926 / 2.;
+		rotXBones = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //rotate the bones
+		S = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)); //scale the bones
+		M = TransBones * rotXBones* S;
+		glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glUniformMatrix4fv(prog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
+		glDrawArrays(GL_LINES, 4, size_stick - 4);
+
+
+		//render combat plane
 		bricks->bind();
 		glUniformMatrix4fv(bricks->getUniform("P"), 1, GL_FALSE, &P[0][0]);
 		glUniformMatrix4fv(bricks->getUniform("V"), 1, GL_FALSE, &V[0][0]);
