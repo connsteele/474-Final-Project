@@ -147,38 +147,38 @@ public:
 };
 
 camera mycam;
-
+enum weapon {
+    sword,
+    spear,
+    axe,
+    bow,
+    magic
+};
 class Character {
 public:
     vec3 position;
-    enum weapon {
-        sword,
-        spear,
-        axe,
-        bow,
-        magic
-    };
     weapon weaponclass;
     bool hasShield;
     int health;
     string name;
     int isCharacter = 0; // is 1 when character actually exists
-
+    GLuint texture;
     // constructors
     Character();
-    Character(string name, vec3 position, weapon weaponclass, bool hasShield, int health);
+    Character(string name, vec3 position, weapon weaponclass, bool hasShield, int health, GLuint charTex);
 };
 
 Character::Character() {
     isCharacter = 0;
 }
-Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shield, int charHealth) {
+Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shield, int charHealth, GLuint charTex) {
     position = charPos;
     weaponclass = curWeapon;
     hasShield = shield;
     name = charName;
     health = charHealth;
     isCharacter = 1;
+    texture = charTex;
 }
 
 class Board {
@@ -190,7 +190,7 @@ public:
     // Rendered Positions
     vector<vec3> mapBlocks;
     vector<int> characterIndices;
-    vector<vec3> spritePositions;
+    vector<Character> characters;
 
     // Character Positions
     vector<vector<Character>> team1Pos;
@@ -241,18 +241,26 @@ int Board::checkWin() {
 
 void Board::convertCharToPhysicalCoordinates() {
     // uses the 2D array of character positions and sets the character indices array
-    // used to get the correct position to draw each character
+    // used to set the correct position to draw each character
     int counter = 0;
-    vector<int> characterIndices;
-    vector<Character> characters;
+    cout << "IN CONVERT\n";
     for (int i = 0; i < boardWidth; i++) {
         for (int j = 0; j < boardHeight; j++) {
             if (hasCharacter(i, j)) {
                 characterIndices.push_back(counter); // gets indices of 2D and puts it into 1D array
-                // TODO: convert to vec3 positions above each grid square and store in spritePositions
+                //  convert to vec3 positions above each grid square and store in characters
+                characters.push_back(getCharacter(i, j));
             }
             counter++;
         }
+    }
+
+    cout << "character size: " << characters.size();
+    for (int i = 0; i < characters.size(); i++) {
+        characters[i].position = mapBlocks[characterIndices[i]] + vec3(2.75, 0.1, 5);
+        cout << "character[i] position.x: " << characters[i].position.x;
+        cout << "character[i] position.y: " << characters[i].position.y;
+        cout << "character[i] position.z: " << characters[i].position.z;
     }
 
 }
@@ -260,6 +268,10 @@ void Board::convertCharToPhysicalCoordinates() {
 // Character management methods
 int Board::addCharacter(Character c, int x, int y) {
     // returns 1 if character is added successfully (i.e. no other unit exists in the same position), otherwise 0
+    if (hasCharacter(x, y)) {
+        return 0;
+    }
+    allCharPos.at(x).at(y) = c;
 	return 0; //temp
 }
 
@@ -280,10 +292,10 @@ Character Board::getCharacter(int x, int y) {
 int Board::moveCharacter(int charX, int charY, int destX, int destY) {
 	// implementation needed
 	// check if character exists at that (charX,charY)
-	if (hasCharacter(charX, charY) == 1) {
+	if (hasCharacter(charX, charY)) {
 		// if character exists
 		// check if destination point has a character
-		if (hasCharacter(destX, destY) == 1) {
+		if (hasCharacter(destX, destY)) {
 			// if has character
 			cout << "THERE WILL BE BLOOD" << endl;
 			// just print something right now, or do something that shows that there will be a detection when selecting (start fight)
@@ -332,18 +344,17 @@ public:
 	WindowManager * windowManager = nullptr;
 
 	// Our shader program
-	std::shared_ptr<Program> prog, psky, pplane, bricks;
+	std::shared_ptr<Program> prog, psky, pplane, bricks, billboards;
 
 	// Contains vertex information for OpenGL
-	GLuint VertexArrayID;
+	GLuint VertexArrayID, BillboardVAOID;
 
 	// Data necessary to give our box to OpenGL
 	GLuint VertexBufferID, VertexBufferIDimat, VertexNormDBox, VertexTexBox, IndexBufferIDBox;
+    GLuint BillboardVertexBufferID, BillboardNormBufferID, BillboardTexBufferID, BillboardIndexBufferID;
 
 	//texture data
-	GLuint Texture;
-	GLuint Texture2;
-    GLuint Texture3;
+    GLuint Texture, Texture1, Texture2, Texture3;
 	//line
 	Line linerender;
 	Line smoothrender;
@@ -501,17 +512,81 @@ public:
 		glEnableVertexAttribArray(1);
 		glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 0, (void*)0);
 
+        // billboard VAO and VBO
+        glGenVertexArrays(1, &BillboardVAOID);
+        glBindVertexArray(BillboardVAOID);
 
+        //generate vertex buffer to hand off to OGL
+        glGenBuffers(1, &BillboardVertexBufferID);
+        //set the current state to focus on our vertex buffer
+        glBindBuffer(GL_ARRAY_BUFFER, BillboardVertexBufferID);
 
-		glBindVertexArray(0);
+        GLfloat cube_vertices[] = {
+            // front
+            -1.0, -1.0,  1.0,//LD
+            1.0, -1.0,  1.0,//RD
+            1.0,  1.0,  1.0,//RU
+            -1.0,  1.0,  1.0,//LU
+        };
+        //make it a bit smaller
+        for (int i = 0; i < 12; i++)
+            cube_vertices[i] *= 0.5;
+        //actually memcopy the data - only do this once
+        glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_DYNAMIC_DRAW);
 
+        //we need to set up the vertex array
+        glEnableVertexAttribArray(0);
+        //key function to get up how many elements to pull out at a time (3)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	
+        //color
+        GLfloat cube_norm[] = {
+            // front colors
+            0.0, 0.0, 1.0,
+            0.0, 0.0, 1.0,
+            0.0, 0.0, 1.0,
+            0.0, 0.0, 1.0,
 
+        };
+        glGenBuffers(1, &BillboardNormBufferID);
+        //set the current state to focus on our vertex buffer
+        glBindBuffer(GL_ARRAY_BUFFER, BillboardNormBufferID);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(cube_norm), cube_norm, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+        //color
+        glm::vec2 cube_tex[] = {
+            // front colors
+            glm::vec2(0.0, 1.0),
+            glm::vec2(1.0, 1.0),
+            glm::vec2(1.0, 0.0),
+            glm::vec2(0.0, 0.0),
+
+        };
+        glGenBuffers(1, &BillboardTexBufferID);
+        //set the current state to focus on our vertex buffer
+        glBindBuffer(GL_ARRAY_BUFFER, BillboardTexBufferID);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(cube_tex), cube_tex, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+        glGenBuffers(1, &BillboardIndexBufferID);
+        //set the current state to focus on our vertex buffer
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, BillboardIndexBufferID);
+        GLushort cube_elements[] = {
+
+            // front
+            0, 1, 2,
+            2, 3, 0,
+        };
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
+        glBindVertexArray(0);
 		int width, height, channels;
 		char filepath[1000];
 
 		//texture 1
-		string str = resourceDirectory + "/explosion.jpg";
+		string str = resourceDirectory + "/lyn.png";
 		strcpy(filepath, str.c_str());
 		unsigned char* data = stbi_load(filepath, &width, &height, &channels, 4);
 		glGenTextures(1, &Texture);
@@ -523,6 +598,19 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
+
+        str = resourceDirectory + "/camilla.png";
+        strcpy(filepath, str.c_str());
+        data = stbi_load(filepath, &width, &height, &channels, 4);
+        glGenTextures(1, &Texture1);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, Texture1);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
 		//texture 2
 		str = resourceDirectory + "/skyBox.jpg"; 
@@ -576,24 +664,31 @@ public:
         int mapWidth = 10;
         int mapHeight = 10;
         vector<vec3> mapBlocks;
-        vector<vector<Character>> charPos;
+        vector<vector<Character>> charPos(mapWidth, vector<Character>(mapHeight));
         for (int i = 0; i < mapWidth; i++) {
             for (int j = 0; j < mapHeight; j++) {
                 vec3 blockPos = vec3(i, 0, j) - vec3(mapWidth / 2, 0 , mapHeight / 2);
                 mapBlocks.push_back(blockPos);
             }
         }
-
-        // Set size so can access
-        charPos.resize(mapWidth);
-        for (int i = 0; i < mapHeight; i++) {
-            charPos.at(i).resize(10);
-        }
+        
 		vector<vector<Character>> team1, team2;
 
-        board = Board(mapBlocks, team1, team2, charPos, mapWidth, mapHeight);
+        // test add
+        weapon curweapon = sword;
+        vec3 default = vec3(0, 0, 0);
+        charPos.at(0).at(1) = Character("Lyn", default, curweapon, true, 20, Texture);
+        curweapon = axe;
+        charPos.at(5).at(4) = Character("Camilla", default, axe, false, 25, Texture1);
 
-        //charPos.at(0).at(1) = 10;
+        // send to board
+        board = Board(mapBlocks, team1, team2, charPos, mapWidth, mapHeight);
+        
+
+        //cout << "CONVERT CHAR TO PHYSICAL COORDINATES\n";
+        // call this to convert to map coordinates
+        board.convertCharToPhysicalCoordinates();
+        
 	}
 
 	//General OGL initialization - set OGL state here
@@ -667,6 +762,22 @@ public:
         bricks->addAttribute("vertPos");
         bricks->addAttribute("vertNor");
         bricks->addAttribute("vertTex");
+
+        billboards = std::make_shared<Program>();
+        billboards->setVerbose(true);
+        billboards->setShaderNames(resourceDirectory + "/shader_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
+        if (!billboards->init())
+        {
+            std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+            exit(1);
+        }
+        billboards->addUniform("P");
+        billboards->addUniform("V");
+        billboards->addUniform("M");
+        billboards->addUniform("campos");
+        billboards->addAttribute("vertPos");
+        billboards->addAttribute("vertNor");
+        billboards->addAttribute("vertTex");
 	}
 
 
@@ -794,13 +905,18 @@ public:
 		glUniformMatrix4fv(prog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick-4);
 
+        
+
         glBindVertexArray(0);
 		prog->unbind();
+        
+        
 
         bricks->bind();
         glUniformMatrix4fv(bricks->getUniform("P"), 1, GL_FALSE, &P[0][0]);
         glUniformMatrix4fv(bricks->getUniform("V"), 1, GL_FALSE, &V[0][0]);
         glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, Texture3);
         S = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
@@ -814,8 +930,25 @@ public:
             glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
             brick->draw(bricks, FALSE);
         }
+        
         bricks->unbind();
 
+
+        billboards->bind();
+        glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
+        glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+        glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+        glBindVertexArray(BillboardVAOID);
+
+        for (int i = 0; i < board.characters.size(); i++) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
+            glm::mat4 TransZ = glm::translate(glm::mat4(1.0f), board.characters[i].position);
+            M = TransZ * Vi;
+            glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+        }
+        billboards->unbind();
 	}
 
 };

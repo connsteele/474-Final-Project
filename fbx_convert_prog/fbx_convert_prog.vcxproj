@@ -176,8 +176,10 @@
   <ItemGroup>
     <None Include="..\resources\brick_fragment.glsl" />
     <None Include="..\resources\brick_vertex.glsl" />
+    <None Include="..\resources\fragment_billboard.glsl" />
     <None Include="..\resources\plane_frag.glsl" />
     <None Include="..\resources\plane_vertex.glsl" />
+    <None Include="..\resources\shader_billboard.glsl" />
     <None Include="..\resources\shader_fragment.glsl" />
     <None Include="..\resources\shader_vertex.glsl" />
     <None Include="..\resources\skyfrag.glsl" />
