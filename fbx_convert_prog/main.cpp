@@ -994,17 +994,22 @@ public:
         
         bricks->unbind();
 
-
+		//Draw the ingame sprites
         billboards->bind();
         glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
         glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
         glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
         glBindVertexArray(BillboardVAOID);
 
+		//temporary code, will be moved to buttons, make the sprites move
+		static double moveCharX = 0;
+		moveCharX += 0.25;  // 
+
         for (int i = 0; i < board.characters.size(); i++) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
-            glm::mat4 TransZ = glm::translate(glm::mat4(1.0f), board.characters[i].position);
+			
+            glm::mat4 TransZ = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(moveCharX,0 ,0));
             M = TransZ * Vi;
             glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
