@@ -419,21 +419,25 @@ public:
 		//temp move char, moveCharX
 		if (key == GLFW_KEY_UP && action == GLFW_RELEASE)
 		{
-			// only move charaters if they are TRUE otherwise they dont really exist on the game board for interaction
+			// only move charaters if they are isCharacter = 1 otherwise regard them as gameplay erased from gameboard
 			board.characters[0].position.z -= 1; //only move the first char
+			board.characters[1].position.z -= 1;
 		}
 		if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE)
 		{
 			board.characters[0].position.z += 1; //only move the first char
+			board.characters[1].position.z += 1;
 		}
 		if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
 		{
 			board.characters[0].position.x -= 1; //only move the first char
+			board.characters[1].position.x -= 1;
 		}
 		if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
 		{
 
 			board.characters[0].position.x += 1; //only move the first char
+			board.characters[1].position.x += 1;
 		}
 
 		if (key == GLFW_KEY_R && action == GLFW_RELEASE)  // switch the camera position
