@@ -363,6 +363,7 @@ public:
 
 	//texture data
     GLuint Texture, Texture1, Texture2, Texture3;
+	GLuint TexHector, TexMarth;
 	//line
 	Line linerender;
 	Line smoothrender;
@@ -418,19 +419,19 @@ public:
 		//temp move char, moveCharX
 		if (key == GLFW_KEY_UP && action == GLFW_RELEASE)
 		{
-			moveCharY -= 0.5;
+			moveCharY -= .75;
 		}
 		if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE)
 		{
-			moveCharY += 0.5;
+			moveCharY += .75;
 		}
 		if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
 		{
-			moveCharX -= 0.5;
+			moveCharX -= .75;
 		}
 		if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
 		{
-			moveCharX += 0.5;
+			moveCharX += .75;
 		}
 
 		if (key == GLFW_KEY_R && action == GLFW_RELEASE)  // switch the camera position
@@ -632,8 +633,8 @@ public:
 		int width, height, channels;
 		char filepath[1000];
 
-		//texture 1
-		string str = resourceDirectory + "/lyn.png";
+		//SPRITE TEXTURES
+		string str = resourceDirectory + "/lyn.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
 		unsigned char* data = stbi_load(filepath, &width, &height, &channels, 4);
 		glGenTextures(1, &Texture);
@@ -646,7 +647,7 @@ public:
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-        str = resourceDirectory + "/camilla.png";
+        str = resourceDirectory + "/camilla.png"; // actually get the second sprite texture
         strcpy(filepath, str.c_str());
         data = stbi_load(filepath, &width, &height, &channels, 4);
         glGenTextures(1, &Texture1);
@@ -658,6 +659,32 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
+
+		str = resourceDirectory + "/lahector.png"; // actually get the third sprite texture
+		strcpy(filepath, str.c_str());
+		data = stbi_load(filepath, &width, &height, &channels, 4);
+		glGenTextures(1, &TexHector);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, TexHector);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		str = resourceDirectory + "/marth.png"; // actually get the third sprite texture
+		strcpy(filepath, str.c_str());
+		data = stbi_load(filepath, &width, &height, &channels, 4);
+		glGenTextures(1, &TexMarth);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, TexMarth);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
 
 		//texture 2
 		str = resourceDirectory + "/skyBox.jpg"; 
@@ -724,9 +751,12 @@ public:
         // test add
         weapon curweapon = sword;
         vec3 default = vec3(0, 0, 0);
-        charPos.at(0).at(1) = Character("Lyn", default, curweapon, true, 20, Texture);
+        charPos.at(0).at(1) = Character("Lyn", default, curweapon, true, 20, Texture);  // load the character spite textures
         curweapon = axe;
-        charPos.at(5).at(4) = Character("Camilla", default, axe, false, 25, Texture1);
+        charPos.at(5).at(4) = Character("Camilla", default, axe, false, 25, Texture1);   // load the character spite textures
+		
+		charPos.at(5).at(5) = Character("Hector", default, axe, false, 25, TexHector); //test char3
+		charPos.at(2).at(3) = Character("Marth", default, sword, false, 25, TexMarth); //test char4
 
         // send to board
         board = Board(mapBlocks, team1, team2, charPos, mapWidth, mapHeight);
