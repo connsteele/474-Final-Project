@@ -373,8 +373,9 @@ public:
 	mat4 animmat[200];
 	int animmatsize=0;
 
-    
-
+	//Current camera pos 
+	int curcamPos = 0; //init to 1 so first keypress works, if set to 0 2x key presses to work
+	bool zoomCam = FALSE;
     
 
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -440,9 +441,10 @@ public:
 			board.characters[1].position.x += 1;
 		}
 
+		
 		if (key == GLFW_KEY_R && action == GLFW_RELEASE)  // switch the camera position
 		{
-			static int curcamPos = 1; //init to 1 so first keypress works 
+			
 			if (curcamPos == 0)
 			{
 				//overhead orientation
@@ -460,6 +462,31 @@ public:
 				curcamPos = 0; //switch for next press
 			}
 		}
+		if (key == GLFW_KEY_T && action == GLFW_RELEASE)
+		{
+			zoomCam = TRUE;
+			////Make the overhead cam pan in
+			//if (curcamPos == 0)
+			//{
+			//	double zoom = 0;
+			//	//overhead orientation
+			//	//Call func to update camera pos in render
+			//	for (zoom = 0; zoom < 5; zoom += 1)
+			//	{
+			//		cout << zoom;
+			//		mycam.pos = glm::vec3(-0.75, -10 , -9) + vec3(0, zoom ,0);
+			//	}
+			//	//mycam.pos = glm::vec3(-0.75, -10, -9);
+			//	mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
+			//	mycam.rot.y = 0;
+			//	//curcamPos = 1; //switch for next press
+			//}
+			//else
+			//{
+			//	//nothing
+			//}
+		}
+
 	
 		
 		if (key == GLFW_KEY_C && action == GLFW_RELEASE)
@@ -863,6 +890,28 @@ public:
         billboards->addAttribute("vertTex");
 	}
 
+	double overheadZoomLevel = 0;
+	void zoomCamera() //Pressing T will set a boolean so this gets called in the render function
+	{
+		
+		if (curcamPos == 0) //only do zoom when in the overhead pos
+		{ 
+			overheadZoomLevel += .1;
+			if ( overheadZoomLevel < 5 )
+			{
+				mycam.pos = glm::vec3(-0.75, -10, -9) + vec3(0, overheadZoomLevel, overheadZoomLevel/2);
+				//send something to the shader to make the scene darker
+			}
+			else
+			{
+				zoomCam = FALSE; //stop zooming
+			}
+			mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
+			mycam.rot.y = 0;
+			
+		}
+
+	}
 
 	/****DRAW
 	This is the most important function in your program - this is where you
@@ -913,7 +962,6 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Create the matrix stacks - please leave these alone for now
-		
 		glm::mat4 V, M, P; //View, Model and Perspective matrix
 		V = mycam.process(frametime);
 		M = glm::mat4(1);
@@ -925,6 +973,15 @@ public:
 			}
 		// ...but we overwrite it (optional) with a perspective projection.
 		P = glm::perspective((float)(3.14159 / 4.), (float)((float)width/ (float)height), 0.1f, 1000.0f); //so much type casting... GLM metods are quite funny ones
+		
+		//Zoom the camera if T is pressed
+		if (zoomCam == TRUE )
+		{
+			zoomCamera();
+		}
+		
+
+		//Sky Stuff 
 		float sangle = 3.1415926 / 2.;
 		glm::vec3 camp = -mycam.pos;
 		glm::mat4 TransSky = glm::translate(glm::mat4(1.0f), camp);
