@@ -781,15 +781,19 @@ public:
         
 		vector<vector<Character>> team1, team2;
 
-        // test add
+        // team 1 test chars
         weapon curweapon = sword;
         vec3 default = vec3(0, 0, 0);
         charPos.at(0).at(1) = Character("Lyn", default, curweapon, true, 20, Texture);  // load the character spite textures
         curweapon = axe;
         charPos.at(0).at(2) = Character("Camilla", default, axe, false, 25, Texture1);   // load the character spite textures
-		
 		charPos.at(0).at(3) = Character("Hector", default, axe, false, 25, TexHector); //test char3
 		charPos.at(0).at(4) = Character("Marth", default, sword, false, 25, TexMarth); //test char4
+		//team 2 test chars
+		charPos.at(6).at(4) = Character("Hector", default, axe, false, 25, TexHector); //test char3
+		charPos.at(6).at(3) = Character("Camilla", default, axe, false, 25, Texture1);   // load the character spite textures
+		charPos.at(6).at(2) = Character("Hector", default, axe, false, 25, TexHector); //test char3
+		charPos.at(6).at(1) = Character("Marth", default, sword, false, 25, TexMarth); //test char4
 
         // send to board
         board = Board(mapBlocks, team1, team2, charPos, mapWidth, mapHeight);
