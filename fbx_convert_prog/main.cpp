@@ -419,19 +419,21 @@ public:
 		//temp move char, moveCharX
 		if (key == GLFW_KEY_UP && action == GLFW_RELEASE)
 		{
-			moveCharY -= .75;
+			// only move charaters if they are TRUE otherwise they dont really exist on the game board for interaction
+			board.characters[0].position.z -= 1; //only move the first char
 		}
 		if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE)
 		{
-			moveCharY += .75;
+			board.characters[0].position.z += 1; //only move the first char
 		}
 		if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
 		{
-			moveCharX -= .75;
+			board.characters[0].position.x -= 1; //only move the first char
 		}
 		if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
 		{
-			moveCharX += .75;
+
+			board.characters[0].position.x += 1; //only move the first char
 		}
 
 		if (key == GLFW_KEY_R && action == GLFW_RELEASE)  // switch the camera position
@@ -1066,8 +1068,8 @@ public:
         for (int i = 0; i < board.characters.size(); i++) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
-			
-            glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(moveCharX, 0, moveCharY)); //Our y and z planes are swapped 
+			//+= glm::vec3(moveCharX, 0, moveCharY)
+            glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position ); //Our y and z planes are swapped 
 			//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 			//int moveCharacter(int charX, int charY, int destX, int destY);
 			M = TransSprites * Vi;
