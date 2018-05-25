@@ -21,6 +21,10 @@ shared_ptr<Shape> shape;
 shared_ptr<Shape> plane;
 shared_ptr<Shape> brick;
 
+//temp vars to move char
+static double moveCharX = 0;
+static double moveCharY = 0;
+
 mat4 linint_between_two_orientations(vec3 ez_aka_lookto_1, vec3 ey_aka_up_1, vec3 ez_aka_lookto_2, vec3 ey_aka_up_2, float t);
 
 
@@ -196,6 +200,9 @@ public:
     vector<vector<Character>> team1Pos;
     vector<vector<Character>> team2Pos;
     vector<vector<Character>> allCharPos;
+	//variables to update the character positions
+	static double moveCharX ;
+	static double moveCharY ;
 
     // Constructors
     Board();
@@ -289,11 +296,12 @@ Character Board::getCharacter(int x, int y) {
     return allCharPos.at(x).at(y);
 }
 
-int Board::moveCharacter(int charX, int charY, int destX, int destY) {
+int Board::moveCharacter(int charX, int charY, int destX, int destY) { //fuck this method my guys 
 	// implementation needed
 	// check if character exists at that (charX,charY)
 	if (hasCharacter(charX, charY)) {
 		// if character exists
+		cout << "Char @ tile x: " << charX << " y:" << charY;
 		// check if destination point has a character
 		if (hasCharacter(destX, destY)) {
 			// if has character
@@ -407,6 +415,24 @@ public:
 		{
 			mycam.d = 0;
 		}
+		//temp move char, moveCharX
+		if (key == GLFW_KEY_UP && action == GLFW_RELEASE)
+		{
+			moveCharY -= 0.5;
+		}
+		if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE)
+		{
+			moveCharY += 0.5;
+		}
+		if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
+		{
+			moveCharX -= 0.5;
+		}
+		if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
+		{
+			moveCharX += 0.5;
+		}
+
 		if (key == GLFW_KEY_R && action == GLFW_RELEASE)  // switch the camera position
 		{
 			static int curcamPos = 1; //init to 1 so first keypress works 
@@ -1002,15 +1028,19 @@ public:
         glBindVertexArray(BillboardVAOID);
 
 		//temporary code, will be moved to buttons, make the sprites move
-		static double moveCharX = 0;
-		moveCharX += 0.25;  // 
+		//static double moveCharX = 0;
+		//static double moveCharY = 0;
+		//moveCharX += 0.10;  // temp
+		//moveCharY += 0.10;  // 
 
         for (int i = 0; i < board.characters.size(); i++) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
 			
-            glm::mat4 TransZ = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(moveCharX,0 ,0));
-            M = TransZ * Vi;
+            glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(moveCharX, 0, moveCharY)); //Our y and z planes are swapped 
+			//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
+			//int moveCharacter(int charX, int charY, int destX, int destY);
+			M = TransSprites * Vi;
             glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
         }
