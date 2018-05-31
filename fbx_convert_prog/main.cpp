@@ -352,7 +352,7 @@ public:
 	WindowManager * windowManager = nullptr;
 
 	// Our shader program
-	std::shared_ptr<Program> prog, psky, pplane, bricks, billboards;
+	std::shared_ptr<Program> prog, psky, pplane, bricks, billboards, swrdlrd;
 
 	// Contains vertex information for OpenGL
 	GLuint VertexArrayID, BillboardVAOID;
@@ -832,6 +832,23 @@ public:
 		prog->addAttribute("vertPos");
 		prog->addAttribute("vertimat");
 
+		//Sword Lord Sprite Shader
+		swrdlrd = std::make_shared<Program>();
+		swrdlrd->setVerbose(true);
+		swrdlrd->setShaderNames(resourceDirectory + "/shader_vertex.glsl", resourceDirectory + "/shader_fragment.glsl");
+		if (!swrdlrd->init())
+		{
+			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+			exit(1);
+		}
+		swrdlrd->addUniform("P");
+		swrdlrd->addUniform("V");
+		swrdlrd->addUniform("M");
+		swrdlrd->addUniform("Manim");
+		swrdlrd->addUniform("campos");
+		swrdlrd->addAttribute("vertPos");
+		swrdlrd->addAttribute("vertimat");
+
 
 		psky = std::make_shared<Program>();
 		psky->setVerbose(true);
@@ -1117,7 +1134,8 @@ public:
         
         bricks->unbind();
 
-		//Draw the ingame sprites
+
+		//Draw the temporary Fire Emblem sprites
         billboards->bind();
         glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
         glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
@@ -1142,6 +1160,29 @@ public:
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
         }
         billboards->unbind();
+
+		//Draw the new animated sprites
+		billboards->bind();
+		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
+		glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+		glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glBindVertexArray(BillboardVAOID);
+
+		for (int i = 0; i < board.characters.size(); i++) {
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
+			//+= glm::vec3(moveCharX, 0, moveCharY)
+			glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position); //Our y and z planes are swapped 
+			//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
+			//int moveCharacter(int charX, int charY, int destX, int destY);
+			M = TransSprites * Vi;
+			glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+		}
+		billboards->unbind();
+
+		billboards->unbind();
+
 	}
 
 };
