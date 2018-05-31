@@ -91,6 +91,8 @@
     <None Include="..\resources\skyfrag.glsl" />
     <None Include="..\resources\skyvertex.glsl" />
     <None Include="..\resources\fragment_billboard.glsl" />
-    <None Include="..\resources\shader_billboard.glsl" />
+    <None Include="..\resources\5x7sprite_fragment.glsl" />
+    <None Include="..\resources\5x7sprite_vertex.glsl" />
+    <None Include="..\resources\vert_billboard.glsl" />
   </ItemGroup>
 </Project>

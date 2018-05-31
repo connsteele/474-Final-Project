@@ -835,7 +835,7 @@ public:
 		//Sword Lord Sprite Shader
 		swrdlrd = std::make_shared<Program>();
 		swrdlrd->setVerbose(true);
-		swrdlrd->setShaderNames(resourceDirectory + "/shader_vertex.glsl", resourceDirectory + "/shader_fragment.glsl");
+		swrdlrd->setShaderNames(resourceDirectory + "/5x7sprite_vertex.glsl", resourceDirectory + "/5x7sprite_fragment.glsl");
 		if (!swrdlrd->init())
 		{
 			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
@@ -844,7 +844,7 @@ public:
 		swrdlrd->addUniform("P");
 		swrdlrd->addUniform("V");
 		swrdlrd->addUniform("M");
-		swrdlrd->addUniform("Manim");
+		//swrdlrd->addUniform("Manim");
 		swrdlrd->addUniform("campos");
 		swrdlrd->addAttribute("vertPos");
 		swrdlrd->addAttribute("vertimat");
@@ -896,7 +896,7 @@ public:
 
         billboards = std::make_shared<Program>();
         billboards->setVerbose(true);
-        billboards->setShaderNames(resourceDirectory + "/shader_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
+        billboards->setShaderNames(resourceDirectory + "/vert_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
         if (!billboards->init())
         {
             std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;

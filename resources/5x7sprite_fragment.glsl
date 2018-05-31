@@ -5,12 +5,14 @@ in vec3 vertex_pos;
 in vec2 vertex_tex;
 uniform vec3 campos;
 
+//two textures to interpolate between
 uniform sampler2D tex;
 uniform sampler2D tex2;
 
 //offset uniforms
 uniform vec2 offset1;
 uniform vec2 offset2; 
+
 //interpolation uniform
 uniform float t;
 
