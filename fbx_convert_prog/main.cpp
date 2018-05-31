@@ -1230,7 +1230,7 @@ public:
 		}
 		
 
-		for (int i = 0; i < board.characters.size(); i++) 
+		for (int i = 0; i < board.characters.size(); i++) //find a way to speed this up for animation playback
 		{
 			cout << i << "\n";
 			if (board.characters[i].weaponclass == sword)
@@ -1241,7 +1241,7 @@ public:
 				//glBindTexture(GL_TEXTURE_2D, swrdTex1); //doesnt fix it
 				
 
-				t_swrd += 0.25; //interpolation value for swrd 
+				t_swrd += 0.5; //interpolation value for swrd , was 0.25
 				//cout << "t is: " << t << " off1 is x,y: " << offset1.x << " " << offset1.y << " off2 is x,y  " << offset2.x << " " << offset2.y << endl;
 				if (t_swrd >= 1)
 				{
