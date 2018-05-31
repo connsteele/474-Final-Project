@@ -364,6 +364,7 @@ public:
 	//texture data
     GLuint Texture, Texture1, Texture2, Texture3;
 	GLuint TexHector, TexMarth;
+	GLuint swrdTex1, swrdTex2;
 	//line
 	Line linerender;
 	Line smoothrender;
@@ -666,17 +667,31 @@ public:
 		int width, height, channels;
 		char filepath[1000];
 
-		//SPRITE TEXTURES
-		string str = resourceDirectory + "/lyn.png"; // actually get the first sprite texture
+		//ANIMATED SPRITE TEXTURES
+		string str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
 		unsigned char* data = stbi_load(filepath, &width, &height, &channels, 4);
+		glGenTextures(1, &swrdTex1);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, swrdTex1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // changed from GL_MIRRORED_REPEAT
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //PROBABLY CHANGE FROM NEAREST NEIGHBOR TO SOMETHING ELSE
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		//OLD SPRITE TEXTURES
+		str = resourceDirectory + "/lyn.png"; // actually get the first sprite texture
+		strcpy(filepath, str.c_str());
+		data = stbi_load(filepath, &width, &height, &channels, 4);
 		glGenTextures(1, &Texture);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Texture);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -701,7 +716,7 @@ public:
 		glBindTexture(GL_TEXTURE_2D, TexHector);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST); //TEST DIFFERENT PARAMETER FOR HIGHER QUALITY SPRITE RENDERING
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -714,8 +729,8 @@ public:
 		glBindTexture(GL_TEXTURE_2D, TexMarth);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -784,6 +799,10 @@ public:
         // team 1 test chars
         weapon curweapon = sword;
         vec3 default = vec3(0, 0, 0);
+		//NEW UNIT
+		charPos.at(0).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex1); //test char4
+
+		//OLD TEMP UNITS
         charPos.at(0).at(1) = Character("Lyn", default, curweapon, true, 20, Texture);  // load the character spite textures
         curweapon = axe;
         charPos.at(0).at(2) = Character("Camilla", default, axe, false, 25, Texture1);   // load the character spite textures
@@ -1162,26 +1181,29 @@ public:
         billboards->unbind();
 
 		//Draw the new animated sprites
-		billboards->bind();
-		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
-		glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
-		glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		swrdlrd->bind();
+		glUniformMatrix4fv(swrdlrd->getUniform("P"), 1, GL_FALSE, &P[0][0]);
+		glUniformMatrix4fv(swrdlrd->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+		glUniformMatrix4fv(swrdlrd->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glBindVertexArray(BillboardVAOID);
 
 		for (int i = 0; i < board.characters.size(); i++) {
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
-			//+= glm::vec3(moveCharX, 0, moveCharY)
-			glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position); //Our y and z planes are swapped 
-			//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
-			//int moveCharacter(int charX, int charY, int destX, int destY);
-			M = TransSprites * Vi;
-			glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+			if (board.characters[i].weaponclass == sword)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
+				//+= glm::vec3(moveCharX, 0, moveCharY)
+				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position); //Our y and z planes are swapped 
+				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
+				//int moveCharacter(int charX, int charY, int destX, int destY);
+				M = TransSprites * Vi;
+				glUniformMatrix4fv(swrdlrd->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+			}
+			
 		}
-		billboards->unbind();
+		swrdlrd->unbind();
 
-		billboards->unbind();
 
 	}
 
