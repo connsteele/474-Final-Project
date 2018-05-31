@@ -681,7 +681,7 @@ public:
 		//glBindTexture(GL_TEXTURE_2D, swrdTex2);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // changed from GL_MIRRORED_REPEAT
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //PROBABLY CHANGE FROM NEAREST NEIGHBOR TO SOMETHING ELSE
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST); //Use nearest_nearest or linear_nearest
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -1275,7 +1275,7 @@ public:
 				glUniform2fv(swrdlrd->getUniform("offset1"), 1, &offset1[0]);
 				glUniform2fv(swrdlrd->getUniform("offset2"), 1, &offset2[0]);
 
-				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position); //Our y and z planes are swapped 
+				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
 				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
