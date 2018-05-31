@@ -360,6 +360,7 @@ public:
 	// Data necessary to give our box to OpenGL
 	GLuint VertexBufferID, VertexBufferIDimat, VertexNormDBox, VertexTexBox, IndexBufferIDBox;
     GLuint BillboardVertexBufferID, BillboardNormBufferID, BillboardTexBufferID, BillboardIndexBufferID;
+	GLuint swrdVertexBufferID, swrdNormBufferID, swrdTexBufferID, swrdIndexBufferID;
 
 	//texture data
     GLuint Texture, Texture1, Texture2, Texture3;
@@ -664,6 +665,8 @@ public:
         };
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
         glBindVertexArray(0);
+
+
 		int width, height, channels;
 		char filepath[1000];
 
@@ -672,14 +675,27 @@ public:
 		strcpy(filepath, str.c_str());
 		unsigned char* data = stbi_load(filepath, &width, &height, &channels, 4);
 		glGenTextures(1, &swrdTex1);
+		//glGenTextures(1, &swrdTex2);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, swrdTex1);
+		//glBindTexture(GL_TEXTURE_2D, swrdTex2);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // changed from GL_MIRRORED_REPEAT
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //PROBABLY CHANGE FROM NEAREST NEIGHBOR TO SOMETHING ELSE
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
+
+
+		//[TWOTEXTURES]
+		//set the 2 textures to the correct samplers in the fragment shader:
+		GLuint Tex1Location = glGetUniformLocation(swrdlrd->pid, "tex");//tex, tex2... sampler in the fragment shader
+		GLuint Tex2Location = glGetUniformLocation(swrdlrd->pid, "tex2");
+		// Then bind the uniform samplers to texture units:
+		glUseProgram(swrdlrd->pid);
+		glUniform1i(Tex1Location, 0);
+		glUniform1i(Tex2Location, 1);
+
 
 		//OLD SPRITE TEXTURES
 		str = resourceDirectory + "/lyn.png"; // actually get the first sprite texture
@@ -764,8 +780,8 @@ public:
 
 		//[TWOTEXTURES]
 		//set the 2 textures to the correct samplers in the fragment shader:
-		GLuint Tex1Location = glGetUniformLocation(prog->pid, "tex");//tex, tex2... sampler in the fragment shader
-		GLuint Tex2Location = glGetUniformLocation(prog->pid, "tex2");
+		Tex1Location = glGetUniformLocation(prog->pid, "tex");//tex, tex2... sampler in the fragment shader
+		Tex2Location = glGetUniformLocation(prog->pid, "tex2");
         GLuint Tex3Location = glGetUniformLocation(prog->pid, "bricks");
 		// Then bind the uniform samplers to texture units:
 		glUseProgram(prog->pid);
@@ -803,16 +819,16 @@ public:
 		charPos.at(0).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex1); //test char4
 
 		//OLD TEMP UNITS
-        charPos.at(0).at(1) = Character("Lyn", default, curweapon, true, 20, Texture);  // load the character spite textures
+        charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture);  // load the character spite textures
         curweapon = axe;
         charPos.at(0).at(2) = Character("Camilla", default, axe, false, 25, Texture1);   // load the character spite textures
 		charPos.at(0).at(3) = Character("Hector", default, axe, false, 25, TexHector); //test char3
-		charPos.at(0).at(4) = Character("Marth", default, sword, false, 25, TexMarth); //test char4
+		charPos.at(0).at(4) = Character("Marth", default, axe, false, 25, TexMarth); //test char4
 		//team 2 test chars
 		charPos.at(6).at(4) = Character("Hector", default, axe, false, 25, TexHector); //test char3
 		charPos.at(6).at(3) = Character("Camilla", default, axe, false, 25, Texture1);   // load the character spite textures
 		charPos.at(6).at(2) = Character("Hector", default, axe, false, 25, TexHector); //test char3
-		charPos.at(6).at(1) = Character("Marth", default, sword, false, 25, TexMarth); //test char4
+		charPos.at(6).at(1) = Character("Marth", default, axe, false, 25, TexMarth); //test char4
 
         // send to board
         board = Board(mapBlocks, team1, team2, charPos, mapWidth, mapHeight);
@@ -866,7 +882,13 @@ public:
 		//swrdlrd->addUniform("Manim");
 		swrdlrd->addUniform("campos");
 		swrdlrd->addAttribute("vertPos");
-		swrdlrd->addAttribute("vertimat");
+		swrdlrd->addAttribute("vertNor");
+		swrdlrd->addAttribute("vertTex");
+		//swrdlrd->addAttribute("vertimat");
+		//add uniforms for interpolation
+		swrdlrd->addUniform("offset1");
+		swrdlrd->addUniform("offset2");
+		swrdlrd->addUniform("t");
 
 
 		psky = std::make_shared<Program>();
@@ -1168,15 +1190,19 @@ public:
 		//moveCharY += 0.10;  // 
 
         for (int i = 0; i < board.characters.size(); i++) {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
-			//+= glm::vec3(moveCharX, 0, moveCharY)
-            glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position ); //Our y and z planes are swapped 
-			//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
-			//int moveCharacter(int charX, int charY, int destX, int destY);
-			M = TransSprites * Vi;
-            glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+			if (board.characters[i].weaponclass != sword)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
+				//+= glm::vec3(moveCharX, 0, moveCharY)
+				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position); //Our y and z planes are swapped 
+				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
+				//int moveCharacter(int charX, int charY, int destX, int destY);
+				M = TransSprites * Vi;
+				glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+			}
+            
         }
         billboards->unbind();
 
@@ -1187,18 +1213,74 @@ public:
 		glUniformMatrix4fv(swrdlrd->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glBindVertexArray(BillboardVAOID);
 
-		for (int i = 0; i < board.characters.size(); i++) {
+		//Vars for the loop
+		static float t_swrd = 0;
+		static vec2 offset1, offset2;
+		static int firstLoop = 0; //use to initialize the offsets once
+
+		float updateX = 1. / 5.;
+		float updateY = 1. / 7.;
+
+		//initialize
+		if (firstLoop = 0)
+		{
+			offset1.x = 0; offset1.y = 0;
+			offset2.x = updateX; offset2.y = 0;
+			firstLoop += 1;
+		}
+		
+
+		for (int i = 0; i < board.characters.size(); i++) 
+		{
+			cout << i << "\n";
 			if (board.characters[i].weaponclass == sword)
 			{
+				cout << "found char with sword" << "\n";
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
-				//+= glm::vec3(moveCharX, 0, moveCharY)
+				//glBindTexture(GL_TEXTURE_2D, swrdTex1); //doesnt fix it
+				
+
+				t_swrd += 0.25; //interpolation value for swrd 
+				//cout << "t is: " << t << " off1 is x,y: " << offset1.x << " " << offset1.y << " off2 is x,y  " << offset2.x << " " << offset2.y << endl;
+				if (t_swrd >= 1)
+				{
+					t_swrd = 0; //reset t
+						   //update the 2nd offset
+					offset1.x += updateX;
+					if (offset1.x >= 1.00)
+					{
+						offset1.x = 0;
+						offset1.y += updateY;
+						if (offset1.y >= 1.00)
+						{
+							offset1.y = 0;
+						}
+					}
+					//update the 2nd offset
+					offset2.x += updateX;
+					if (offset2.x >= 1.00)
+					{
+						offset2.x = 0;
+						offset2.y += updateY;
+						if (offset2.y >= 1.00)
+						{
+							offset2.y = 0;
+						}
+					}
+					cout << "t is: " << t_swrd << " off1 is x,y: " << offset1.x << " " << offset1.y << " off2 is x,y  " << offset2.x << " " << offset2.y << endl;
+
+				}
+				glUniform1f(swrdlrd->getUniform("t"), t_swrd);
+				glUniform2fv(swrdlrd->getUniform("offset1"), 1, &offset1[0]);
+				glUniform2fv(swrdlrd->getUniform("offset2"), 1, &offset2[0]);
+
 				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position); //Our y and z planes are swapped 
 				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(swrdlrd->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 			}
 			
 		}

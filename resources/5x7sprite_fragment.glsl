@@ -29,6 +29,6 @@ void main()
 
 	//interpolate between the textures
 	color = (tcol2 * t) + (tcol * (1 - t)); // or flip tcols
-
+	//color = vec3(1, 1 ,1);
 
 }

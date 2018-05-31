@@ -13,6 +13,7 @@ uniform sampler2D tex2;
 
 void main()
 {
+	//discard;
 	vec3 n = normalize(vertex_normal);
 	vec3 lp = vec3(10,-20,-100);
 	vec3 ld = normalize(vertex_pos - lp);
