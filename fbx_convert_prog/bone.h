@@ -68,6 +68,60 @@ public:
 		for (int i = 0; i < kids.size(); i++)
 			kids[i]->play_animation(keyframenumber,animationname);
 		}
+
+
+	void myplayanimation(float keyframenumber, string animationname, string animation2name, float f) {
+
+		if (animation[0]->keyframes.size() > keyframenumber)
+		{
+			float ratio = 1. * animation[0]->keyframes.size() / animation[1]->keyframes.size();
+
+
+			float fframe = (float)keyframenumber;
+			int framea = fframe;
+			int frameb = fframe + 1;
+			float t = fframe - (int)fframe;
+
+			quat qa = animation[0]->keyframes[framea].quaternion;
+			quat qb = animation[0]->keyframes[frameb].quaternion;
+			quat qr = slerp(qa, qb, t);
+
+			vec3 ta = animation[0]->keyframes[framea].translation;
+			vec3 tb = animation[0]->keyframes[frameb].translation;
+			vec3 tr = mix(ta, tb, t);
+
+			quat qc = animation[1]->keyframes[framea / ratio].quaternion;
+			quat qd = animation[1]->keyframes[frameb / ratio].quaternion;
+			quat qe = slerp(qc, qd, t);
+
+			vec3 tc = animation[1]->keyframes[framea / ratio].translation;
+			vec3 td = animation[1]->keyframes[frameb / ratio].translation;
+			vec3 te = mix(tc, td, t);
+
+			quat qf = slerp(qr, qe, f);
+			vec3 tf = mix(tr, te, f);
+
+			mat4 M = mat4(qf);
+			mat4 T = translate(mat4(1), tf);
+			M = T * M;
+			if (mat)
+			{
+				mat4 parentmat = mat4(1);
+				if (parent)
+					parentmat = *parent->mat;
+				*mat = parentmat * M;
+			}
+
+			else
+				*mat = mat4(1);
+
+			for (int i = 0; i < kids.size(); i++)
+				kids[i]->myplayanimation(keyframenumber, animationname, animation2name, f);
+
+		}
+
+	}
+
 	//writes into the segment positions and into the animation index VBO
 	void write_to_VBOs(vec3 origin, vector<vec3> &vpos, vector<unsigned int> &imat)
 		{

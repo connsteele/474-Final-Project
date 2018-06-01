@@ -552,7 +552,8 @@ public:
 			animmat[ii] = mat4(1);
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
-		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);
+		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root);
+		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, NULL);
 		root->set_animations(&all_animation,animmat,animmatsize);
 
 		// Initialize the Camera Position and orientation
@@ -1001,6 +1002,7 @@ public:
 		int ms_length = 3813;
 		int anim_step_width_ms = ms_length / keyframe_length;
 		static int frame = 0;
+		static float play_anim_t = 0;
 		if (totaltime_untilframe_ms >= anim_step_width_ms)
 			{
 			totaltime_untilframe_ms = 0;
