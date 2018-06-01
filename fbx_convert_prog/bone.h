@@ -100,6 +100,11 @@ public:
 
 			quat qf = slerp(qr, qe, f);
 			vec3 tf = mix(tr, te, f);
+			if (fframe> animation[animationnum]->keyframes.size() ) {
+				tf = vec3(1.645, 0, 0);
+				cout << "POST TF " << tf.x <<" " << tf.y <<" " << tf.z << endl;
+			}
+			
 
 
 			mat4 M = mat4(qf);
