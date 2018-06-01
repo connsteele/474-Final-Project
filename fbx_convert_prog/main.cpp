@@ -554,8 +554,8 @@ public:
 			animmat[ii] = mat4(1);
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
-		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root);
-		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);
+		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root); //82 frames
+		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);  //92 frames
 		root->set_animations(&all_animation,animmat,animmatsize);
 
 		// Initialize the Camera Position and orientation
@@ -1114,8 +1114,8 @@ public:
 		int keyframe_length = root->animation[anim_num]->keyframes.size();
 		int ms_length = root->animation[anim_num]->duration;
 		int anim_step_width_ms = ms_length / keyframe_length;
-		static int frame = 0;
-		static float play_anim_t = 0;
+		static int frame = 0;  
+		static float play_anim_t = 0; // interpolation value between 2 different animations
 		if (totaltime_untilframe_ms >= anim_step_width_ms)
 			{
 			totaltime_untilframe_ms = 0;
@@ -1132,14 +1132,14 @@ public:
 		}
 	
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
-		root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
-		//root->myplayanimation(frame, 0, 1, play_anim_t);
-		/*if (anim_num == 1 && play_anim_t < 1) {
+		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
+		root->myplayanimation(frame, 0, 1, play_anim_t);
+		if (anim_num == 1 && play_anim_t < 1) {
 			play_anim_t += frametime;
 		}
 		else if (anim_num == 0 && play_anim_t > 0) {
 			play_anim_t -= frametime;
-		}*/
+		}
 
 		// Get current frame buffer size.
 		int width, height;
@@ -1352,7 +1352,7 @@ public:
 
 		for (int i = 0; i < board.characters.size(); i++) //find a way to speed this up for animation playback
 		{
-			cout << i << "\n";
+			//cout << i << "\n";
 			if (board.characters[i].weaponclass == sword) //draw sword units to the board
 			{
 				swordUnits->bind();
@@ -1361,7 +1361,7 @@ public:
 				glUniformMatrix4fv(swordUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glBindVertexArray(BillboardVAOID);
 
-				cout << "found char with sword" << "\n";
+				//cout << "found char with sword" << "\n";
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);				
 

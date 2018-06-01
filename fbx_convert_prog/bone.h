@@ -72,7 +72,7 @@ public:
 
 	void myplayanimation(float keyframenumber, int animationnum, int animation2num, float f) {
 
-		if (animation[animationnum]->keyframes.size() > keyframenumber)
+		if (animation[animation2num]->keyframes.size() > keyframenumber +1)
 		{
 			float ratio = 1. * animation[animationnum]->keyframes.size() / animation[animation2num]->keyframes.size();
 
@@ -82,24 +82,25 @@ public:
 			int frameb = fframe + 1;
 			float t = fframe - (int)fframe;
 
-			quat qa = animation[animationnum]->keyframes[framea].quaternion;
-			quat qb = animation[animationnum]->keyframes[frameb].quaternion;
+			quat qa = animation[animationnum]->keyframes[framea * ratio].quaternion;
+			quat qb = animation[animationnum]->keyframes[frameb * ratio].quaternion;
 			quat qr = slerp(qa, qb, t);
 
-			vec3 ta = animation[animationnum]->keyframes[framea].translation;
-			vec3 tb = animation[animationnum]->keyframes[frameb].translation;
+			vec3 ta = animation[animationnum]->keyframes[framea*ratio].translation;
+			vec3 tb = animation[animationnum]->keyframes[frameb*ratio].translation;
 			vec3 tr = mix(ta, tb, t);
 
-			quat qc = animation[animation2num]->keyframes[framea / ratio].quaternion;
-			quat qd = animation[animation2num]->keyframes[frameb / ratio].quaternion;
+			quat qc = animation[animation2num]->keyframes[framea].quaternion;
+			quat qd = animation[animation2num]->keyframes[frameb].quaternion;
 			quat qe = slerp(qc, qd, t);
 
-			vec3 tc = animation[animation2num]->keyframes[framea / ratio].translation;
-			vec3 td = animation[animation2num]->keyframes[frameb / ratio].translation;
+			vec3 tc = animation[animation2num]->keyframes[framea].translation;
+			vec3 td = animation[animation2num]->keyframes[frameb].translation;
 			vec3 te = mix(tc, td, t);
 
 			quat qf = slerp(qr, qe, f);
 			vec3 tf = mix(tr, te, f);
+
 
 			mat4 M = mat4(qf);
 			mat4 T = translate(mat4(1), tf);
