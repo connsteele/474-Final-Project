@@ -36,11 +36,11 @@ void main()
 	//update color for teams
 	if (team == 1) //red team
 	{
-		color *= vec4(1, .6, .6, 1);
+		color *= vec4(1, .7, .7, 1);
 	}
 	else if (team == 2) //blue team
 	{
-		color *= vec4(.5, 1, 1, 1);
+		color *= vec4(.7, 1, 1, 1);
 	}
 
 
