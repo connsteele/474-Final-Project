@@ -167,15 +167,16 @@ public:
     string name;
     int isCharacter = 0; // is 1 when character actually exists
     GLuint texture;
+	int team; //1 for Red Team, 2 for Blue Team
     // constructors
     Character();
-    Character(string name, vec3 position, weapon weaponclass, bool hasShield, int health, GLuint charTex);
+    Character(string name, vec3 position, weapon weaponclass, bool hasShield, int health, GLuint charTex, int charTeam);
 };
 
 Character::Character() {
     isCharacter = 0;
 }
-Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shield, int charHealth, GLuint charTex) {
+Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shield, int charHealth, GLuint charTex, int charTeam) {
     position = charPos;
     weaponclass = curWeapon;
     hasShield = shield;
@@ -183,6 +184,7 @@ Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shiel
     health = charHealth;
     isCharacter = 1;
     texture = charTex;
+	team = charTeam;
 }
 
 class Board {
@@ -352,7 +354,7 @@ public:
 	WindowManager * windowManager = nullptr;
 
 	// Our shader program
-	std::shared_ptr<Program> prog, psky, pplane, bricks, billboards, swrdlrd;
+	std::shared_ptr<Program> prog, psky, pplane, bricks, billboards, swordUnits;
 
 	// Contains vertex information for OpenGL
 	GLuint VertexArrayID, BillboardVAOID;
@@ -690,10 +692,10 @@ public:
 
 		//[TWOTEXTURES]
 		//set the 2 textures to the correct samplers in the fragment shader:
-		GLuint Tex1Location = glGetUniformLocation(swrdlrd->pid, "tex");//tex, tex2... sampler in the fragment shader
-		GLuint Tex2Location = glGetUniformLocation(swrdlrd->pid, "tex2");
+		GLuint Tex1Location = glGetUniformLocation(swordUnits->pid, "tex");//tex, tex2... sampler in the fragment shader
+		GLuint Tex2Location = glGetUniformLocation(swordUnits->pid, "tex2");
 		// Then bind the uniform samplers to texture units:
-		glUseProgram(swrdlrd->pid);
+		glUseProgram(swordUnits->pid);
 		glUniform1i(Tex1Location, 0);
 		glUniform1i(Tex2Location, 1);
 
@@ -816,20 +818,29 @@ public:
         // team 1 test chars
         weapon curweapon = sword;
         vec3 default = vec3(0, 0, 0);
-		//NEW UNIT
-		charPos.at(0).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex1); //test char4
+		//NEW UNITS
+		//Team 1
+		charPos.at(0).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex1, 1);
+		charPos.at(0).at(1) = Character("Sword Master", default, sword, false, 25, swrdTex1, 1);
+		charPos.at(0).at(2) = Character("Sword Master", default, sword, false, 25, swrdTex1, 1);
+		charPos.at(0).at(3) = Character("Sword Master", default, sword, false, 25, swrdTex1, 1);
+		//Team 2
+		charPos.at(6).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex1, 2);
+		charPos.at(6).at(1) = Character("Sword Master", default, sword, false, 25, swrdTex1, 2);
+		charPos.at(6).at(2) = Character("Sword Master", default, sword, false, 25, swrdTex1, 2);
+		charPos.at(6).at(3) = Character("Sword Master", default, sword, false, 25, swrdTex1, 2);
 
-		//OLD TEMP UNITS
-        charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture);  // load the character spite textures
-        curweapon = axe;
-        charPos.at(0).at(2) = Character("Camilla", default, axe, false, 25, Texture1);   // load the character spite textures
-		charPos.at(0).at(3) = Character("Hector", default, axe, false, 25, TexHector); //test char3
-		charPos.at(0).at(4) = Character("Marth", default, axe, false, 25, TexMarth); //test char4
-		//team 2 test chars
-		charPos.at(6).at(4) = Character("Hector", default, axe, false, 25, TexHector); //test char3
-		charPos.at(6).at(3) = Character("Camilla", default, axe, false, 25, Texture1);   // load the character spite textures
-		charPos.at(6).at(2) = Character("Hector", default, axe, false, 25, TexHector); //test char3
-		charPos.at(6).at(1) = Character("Marth", default, axe, false, 25, TexMarth); //test char4
+		////OLD TEMP UNITS
+  //      charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture, 1);  // load the character spite textures
+  //      curweapon = axe;
+  //      charPos.at(0).at(2) = Character("Camilla", default, axe, false, 25, Texture1, 1);   // load the character spite textures
+		//charPos.at(0).at(3) = Character("Hector", default, axe, false, 25, TexHector, 1); //test char3
+		//charPos.at(0).at(4) = Character("Marth", default, axe, false, 25, TexMarth, 2); //test char4
+		////team 2 test chars
+		//charPos.at(6).at(4) = Character("Hector", default, axe, false, 25, TexHector, 1); //test char3
+		//charPos.at(6).at(3) = Character("Camilla", default, axe, false, 25, Texture1, 2);   // load the character spite textures
+		//charPos.at(6).at(2) = Character("Hector", default, axe, false, 25, TexHector, 2); //test char3
+		//charPos.at(6).at(1) = Character("Marth", default, axe, false, 25, TexMarth, 2); //test char4
 
         // send to board
         board = Board(mapBlocks, team1, team2, charPos, mapWidth, mapHeight);
@@ -869,27 +880,28 @@ public:
 		prog->addAttribute("vertimat");
 
 		//Sword Lord Sprite Shader
-		swrdlrd = std::make_shared<Program>();
-		swrdlrd->setVerbose(true);
-		swrdlrd->setShaderNames(resourceDirectory + "/5x7sprite_vertex.glsl", resourceDirectory + "/5x7sprite_fragment.glsl");
-		if (!swrdlrd->init())
+		swordUnits = std::make_shared<Program>();
+		swordUnits->setVerbose(true);
+		swordUnits->setShaderNames(resourceDirectory + "/5x7sprite_vertex.glsl", resourceDirectory + "/5x7sprite_fragment.glsl");
+		if (!swordUnits->init())
 		{
 			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
 			exit(1);
 		}
-		swrdlrd->addUniform("P");
-		swrdlrd->addUniform("V");
-		swrdlrd->addUniform("M");
+		swordUnits->addUniform("P");
+		swordUnits->addUniform("V");
+		swordUnits->addUniform("M");
 		//swrdlrd->addUniform("Manim");
-		swrdlrd->addUniform("campos");
-		swrdlrd->addAttribute("vertPos");
-		swrdlrd->addAttribute("vertNor");
-		swrdlrd->addAttribute("vertTex");
+		swordUnits->addUniform("campos");
+		swordUnits->addAttribute("vertPos");
+		swordUnits->addAttribute("vertNor");
+		swordUnits->addAttribute("vertTex");
 		//swrdlrd->addAttribute("vertimat");
 		//add uniforms for interpolation
-		swrdlrd->addUniform("offset1");
-		swrdlrd->addUniform("offset2");
-		swrdlrd->addUniform("t");
+		swordUnits->addUniform("offset1");
+		swordUnits->addUniform("offset2");
+		swordUnits->addUniform("t");
+		swordUnits->addUniform("team");
 
 
 		psky = std::make_shared<Program>();
@@ -1066,29 +1078,27 @@ public:
 		glEnable(GL_DEPTH_TEST);	
 		psky->unbind();
 
-		// Draw the plane using GLSL.
-		glm::mat4 TransPlane = glm::translate(glm::mat4(1.0f), vec3(0,0,-3));
-		glm::mat4 SPlane = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f));
-		sangle = -3.1415926 / 2.;
-		glm::mat4 RotateXPlane = glm::rotate(glm::mat4(1.0f), sangle, vec3(1,0,0));
-		
-		mat4 anim = test_animation();
-		M = TransPlane*anim*RotateXPlane;
+		//// Draw the plane using GLSL.
+		//glm::mat4 TransPlane = glm::translate(glm::mat4(1.0f), vec3(0,0,-3));
+		//glm::mat4 SPlane = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f));
+		//sangle = -3.1415926 / 2.;
+		//glm::mat4 RotateXPlane = glm::rotate(glm::mat4(1.0f), sangle, vec3(1,0,0));
+		//
+		//mat4 anim = test_animation();
+		//M = TransPlane*anim*RotateXPlane;
 
-		pplane->bind();
-		glUniformMatrix4fv(pplane->getUniform("P"), 1, GL_FALSE, &P[0][0]);
-		glUniformMatrix4fv(pplane->getUniform("V"), 1, GL_FALSE, &V[0][0]);
-		glUniformMatrix4fv(pplane->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-		glUniform3fv(pplane->getUniform("campos"), 1, &mycam.pos[0]);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Texture2);
-		//plane->draw(pplane, false);			//render!!!!!!!
-		pplane->unbind();
+		//pplane->bind();
+		//glUniformMatrix4fv(pplane->getUniform("P"), 1, GL_FALSE, &P[0][0]);
+		//glUniformMatrix4fv(pplane->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+		//glUniformMatrix4fv(pplane->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		//glUniform3fv(pplane->getUniform("campos"), 1, &mycam.pos[0]);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, Texture2);
+		////plane->draw(pplane, false);			//render!!!!!!!
+		//pplane->unbind();
 
 
-		//draw the lines
-		
-		
+		//draw the lines for the bones		
 		prog->bind();
 		//send the matrices to the shaders
 		glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -1105,7 +1115,7 @@ public:
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Texture);
 
-		// COMBAT DRAWING, MAKE THIS GRID DRAW A LARGE TERRAIN FOR BATTLES, CAN PUSH WHOLE COMBAT SCENE FURTHER AWAY FROM OVERHEAD SCENE IF NEEDED
+		//// COMBAT DRAWING, MAKE THIS GRID DRAW A LARGE TERRAIN FOR BATTLES, CAN PUSH WHOLE COMBAT SCENE FURTHER AWAY FROM OVERHEAD SCENE IF NEEDED ////
 		//draw right set of bones
 		glm::mat4 TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
 		sangle = 3.1415926 / 2.;
@@ -1153,7 +1163,7 @@ public:
         
         
 
-		//OVERHEAD DRAWING
+		//// OVERHEAD DRAWING ////
 
 		//draw the overhead game grid
         bricks->bind();
@@ -1208,13 +1218,8 @@ public:
         }
         billboards->unbind();
 
-		//Draw the new animated sprites
-		swrdlrd->bind();
-		glUniformMatrix4fv(swrdlrd->getUniform("P"), 1, GL_FALSE, &P[0][0]);
-		glUniformMatrix4fv(swrdlrd->getUniform("V"), 1, GL_FALSE, &V[0][0]);
-		glUniformMatrix4fv(swrdlrd->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-		glBindVertexArray(BillboardVAOID);
 
+		//Draw the new animated sprites based on Weapon class
 		//Vars for the loop
 		static float t_swrd = 0;
 		static vec2 offset1, offset2;
@@ -1237,18 +1242,21 @@ public:
 			cout << i << "\n";
 			if (board.characters[i].weaponclass == sword)
 			{
+				swordUnits->bind();
+				glUniformMatrix4fv(swordUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
+				glUniformMatrix4fv(swordUnits->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+				glUniformMatrix4fv(swordUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				glBindVertexArray(BillboardVAOID);
+
 				cout << "found char with sword" << "\n";
 				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
-				//glBindTexture(GL_TEXTURE_2D, swrdTex1); //doesnt fix it
-				
+				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);				
 
-				t_swrd += 0.5; //interpolation value for swrd , was 0.25
-				//cout << "t is: " << t << " off1 is x,y: " << offset1.x << " " << offset1.y << " off2 is x,y  " << offset2.x << " " << offset2.y << endl;
+				t_swrd += 0.25; //interpolation value for sword Units
 				if (t_swrd >= 1)
 				{
 					t_swrd = 0; //reset t
-						   //update the 2nd offset
+					//update the 1st offset
 					offset1.x += updateX;
 					if (offset1.x >= 1.00)
 					{
@@ -1270,23 +1278,35 @@ public:
 							offset2.y = 0;
 						}
 					}
-					cout << "t is: " << t_swrd << " off1 is x,y: " << offset1.x << " " << offset1.y << " off2 is x,y  " << offset2.x << " " << offset2.y << endl;
+					//cout << "t is: " << t_swrd << " off1 is x,y: " << offset1.x << " " << offset1.y << " off2 is x,y  " << offset2.x << " " << offset2.y << endl;
 
 				}
-				glUniform1f(swrdlrd->getUniform("t"), t_swrd);
-				glUniform2fv(swrdlrd->getUniform("offset1"), 1, &offset1[0]);
-				glUniform2fv(swrdlrd->getUniform("offset2"), 1, &offset2[0]);
+				//bind uniforms to the shader
+				glUniform1f(swordUnits->getUniform("t"), t_swrd);
+				glUniform2fv(swordUnits->getUniform("offset1"), 1, &offset1[0]);
+				glUniform2fv(swordUnits->getUniform("offset2"), 1, &offset2[0]);
+				glUniform1i(swordUnits->getUniform("team"), board.characters[i].team);
 
 				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
 				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
-				glUniformMatrix4fv(swrdlrd->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				glUniformMatrix4fv(swordUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
+				swordUnits->unbind();
+			}
+			if (board.characters[i].weaponclass == spear)
+			{
+				;
+			}
+			if (board.characters[i].weaponclass == axe)
+			{
+				;
 			}
 			
 		}
-		swrdlrd->unbind();
+		
 
 
 	}

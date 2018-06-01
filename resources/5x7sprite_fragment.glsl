@@ -16,6 +16,9 @@ uniform vec2 offset2;
 //interpolation uniform
 uniform float t;
 
+//get team uniform for coloring the teams
+uniform int team;
+
 void main()
 {
 	vec3 n = normalize(vertex_normal);
@@ -29,6 +32,16 @@ void main()
 
 	//interpolate between the textures
 	color = (tcol2 * t) + (tcol * (1 - t)); // or flip tcols
-	//color = vec3(1, 1 ,1);
+
+	//update color for teams
+	if (team == 1) //red team
+	{
+		color *= vec4(1, .6, .6, 1);
+	}
+	else if (team == 2) //blue team
+	{
+		color *= vec4(.5, 1, 1, 1);
+	}
+
 
 }
