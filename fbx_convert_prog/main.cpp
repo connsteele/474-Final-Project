@@ -555,7 +555,7 @@ public:
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
 		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root);
-		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, NULL);
+		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);
 		root->set_animations(&all_animation,animmat,animmatsize);
 
 		// Initialize the Camera Position and orientation
@@ -1005,13 +1005,15 @@ public:
 		static double totaltime_untilframe_ms = 0;
 		totaltime_untilframe_ms += frametime*1000.0;
 
+		static int anim_num = 0;
+
 		for (int ii = 0; ii < 200; ii++)
 			animmat[ii] = mat4(1);
 
 
 		//animation frame system
-		int keyframe_length = 92;
-		int ms_length = 3813;
+		int keyframe_length = root->animation[anim_num]->keyframes.size();
+		int ms_length = root->animation[anim_num]->duration;
 		int anim_step_width_ms = ms_length / keyframe_length;
 		static int frame = 0;
 		static float play_anim_t = 0;
@@ -1024,9 +1026,21 @@ public:
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
+			anim_num++;
+			if (anim_num > 1) {
+				anim_num = 0;
+			}
 		}
+	
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 		root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
+		//root->myplayanimation(frame, 0, 1, play_anim_t);
+		/*if (anim_num == 1 && play_anim_t < 1) {
+			play_anim_t += frametime;
+		}
+		else if (anim_num == 0 && play_anim_t > 0) {
+			play_anim_t -= frametime;
+		}*/
 
 		// Get current frame buffer size.
 		int width, height;

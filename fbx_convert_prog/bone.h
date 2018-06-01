@@ -70,11 +70,11 @@ public:
 		}
 
 
-	void myplayanimation(float keyframenumber, string animationname, string animation2name, float f) {
+	void myplayanimation(float keyframenumber, int animationnum, int animation2num, float f) {
 
-		if (animation[0]->keyframes.size() > keyframenumber)
+		if (animation[animationnum]->keyframes.size() > keyframenumber)
 		{
-			float ratio = 1. * animation[0]->keyframes.size() / animation[1]->keyframes.size();
+			float ratio = 1. * animation[animationnum]->keyframes.size() / animation[animation2num]->keyframes.size();
 
 
 			float fframe = (float)keyframenumber;
@@ -82,20 +82,20 @@ public:
 			int frameb = fframe + 1;
 			float t = fframe - (int)fframe;
 
-			quat qa = animation[0]->keyframes[framea].quaternion;
-			quat qb = animation[0]->keyframes[frameb].quaternion;
+			quat qa = animation[animationnum]->keyframes[framea].quaternion;
+			quat qb = animation[animationnum]->keyframes[frameb].quaternion;
 			quat qr = slerp(qa, qb, t);
 
-			vec3 ta = animation[0]->keyframes[framea].translation;
-			vec3 tb = animation[0]->keyframes[frameb].translation;
+			vec3 ta = animation[animationnum]->keyframes[framea].translation;
+			vec3 tb = animation[animationnum]->keyframes[frameb].translation;
 			vec3 tr = mix(ta, tb, t);
 
-			quat qc = animation[1]->keyframes[framea / ratio].quaternion;
-			quat qd = animation[1]->keyframes[frameb / ratio].quaternion;
+			quat qc = animation[animation2num]->keyframes[framea / ratio].quaternion;
+			quat qd = animation[animation2num]->keyframes[frameb / ratio].quaternion;
 			quat qe = slerp(qc, qd, t);
 
-			vec3 tc = animation[1]->keyframes[framea / ratio].translation;
-			vec3 td = animation[1]->keyframes[frameb / ratio].translation;
+			vec3 tc = animation[animation2num]->keyframes[framea / ratio].translation;
+			vec3 td = animation[animation2num]->keyframes[frameb / ratio].translation;
 			vec3 te = mix(tc, td, t);
 
 			quat qf = slerp(qr, qe, f);
@@ -116,7 +116,7 @@ public:
 				*mat = mat4(1);
 
 			for (int i = 0; i < kids.size(); i++)
-				kids[i]->myplayanimation(keyframenumber, animationname, animation2name, f);
+				kids[i]->myplayanimation(keyframenumber, animationnum, animation2num, f);
 
 		}
 
@@ -151,6 +151,26 @@ public:
 		for (int i = 0; i < kids.size(); i++)
 			kids[i]->set_animations(all_anim, matrices, animsize);
 		}
+
+	int getKeyFrameCount(std::string animationName) {
+		for (auto anim : animation) {
+			if (anim->name == animationName) {
+				return anim->frames;
+			}
+		}
+
+		return 1;
+	}
+
+	long long getDuration(std::string animationName) {
+		for (auto anim : animation) {
+			if (anim->name == animationName) {
+				return anim->duration;
+			}
+		}
+
+		return 0;
+	}
 
 };
 int readtobone(string file,all_animations *all_animation, bone **proot);
