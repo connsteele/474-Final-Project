@@ -354,7 +354,7 @@ public:
 	WindowManager * windowManager = nullptr;
 
 	// Our shader program
-	std::shared_ptr<Program> prog, psky, pplane, bricks, billboards, swordUnits, spearUnits, axeUnits, magicUnits;
+	std::shared_ptr<Program> bonesprog, psky, pplane, bricks, billboards, swordUnits, spearUnits, axeUnits, magicUnits;
 
 	// Contains vertex information for OpenGL
 	GLuint VertexArrayID, BillboardVAOID;
@@ -810,11 +810,11 @@ public:
 
 		//[TWOTEXTURES]
 		//set the 2 textures to the correct samplers in the fragment shader:
-		Tex1Location = glGetUniformLocation(prog->pid, "tex");//tex, tex2... sampler in the fragment shader
-		Tex2Location = glGetUniformLocation(prog->pid, "tex2");
-        GLuint Tex3Location = glGetUniformLocation(prog->pid, "bricks");
+		Tex1Location = glGetUniformLocation(bonesprog->pid, "tex");//tex, tex2... sampler in the fragment shader
+		Tex2Location = glGetUniformLocation(bonesprog->pid, "tex2");
+        GLuint Tex3Location = glGetUniformLocation(bonesprog->pid, "bricks");
 		// Then bind the uniform samplers to texture units:
-		glUseProgram(prog->pid);
+		glUseProgram(bonesprog->pid);
 		glUniform1i(Tex1Location, 0);
 		glUniform1i(Tex2Location, 1);
         glUniform1i(Tex3Location, 1);
@@ -890,21 +890,21 @@ public:
 		glEnable(GL_DEPTH_TEST);
 		//glDisable(GL_DEPTH_TEST);
 		// Initialize the GLSL program.
-		prog = std::make_shared<Program>();
-		prog->setVerbose(true);
-		prog->setShaderNames(resourceDirectory + "/shader_vertex.glsl", resourceDirectory + "/shader_fragment.glsl");
-		if (!prog->init())
+		bonesprog = std::make_shared<Program>();
+		bonesprog->setVerbose(true);
+		bonesprog->setShaderNames(resourceDirectory + "/shader_vertex.glsl", resourceDirectory + "/shader_fragment.glsl");
+		if (!bonesprog->init())
 		{
 			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
 			exit(1);
 		}
-		prog->addUniform("P");
-		prog->addUniform("V");
-		prog->addUniform("M");
-		prog->addUniform("Manim");
-		prog->addUniform("campos");
-		prog->addAttribute("vertPos");
-		prog->addAttribute("vertimat");
+		bonesprog->addUniform("P");
+		bonesprog->addUniform("V");
+		bonesprog->addUniform("M");
+		bonesprog->addUniform("Manim");
+		bonesprog->addUniform("campos");
+		bonesprog->addAttribute("vertPos");
+		bonesprog->addAttribute("vertimat");
 
 		//// UNIT SHADERS ////
 		//Sword Unit Sprite Shader
@@ -972,7 +972,7 @@ public:
 		psky->addAttribute("vertTex");
 
 		//unused?
-		pplane = std::make_shared<Program>();
+		/*pplane = std::make_shared<Program>();
 		pplane->setVerbose(true);
 		pplane->setShaderNames(resourceDirectory + "/plane_vertex.glsl", resourceDirectory + "/plane_frag.glsl");
 		if (!pplane->init())
@@ -986,7 +986,7 @@ public:
 		pplane->addUniform("campos");
 		pplane->addAttribute("vertPos");
 		pplane->addAttribute("vertNor");
-		pplane->addAttribute("vertTex");
+		pplane->addAttribute("vertTex");*/
 
 		//Terrain Shader
         bricks = std::make_shared<Program>();
@@ -1002,7 +1002,7 @@ public:
         bricks->addAttribute("vertTex");
 
 		//Now unused: non-animated billboard sprite shader
-        billboards = std::make_shared<Program>();
+        /*billboards = std::make_shared<Program>();
         billboards->setVerbose(true);
         billboards->setShaderNames(resourceDirectory + "/vert_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
         if (!billboards->init())
@@ -1016,7 +1016,7 @@ public:
         billboards->addUniform("campos");
         billboards->addAttribute("vertPos");
         billboards->addAttribute("vertNor");
-        billboards->addAttribute("vertTex");
+        billboards->addAttribute("vertTex");*/
 	}
 
 	double overheadZoomLevel = 0;
@@ -1152,12 +1152,12 @@ public:
 
 
 		//draw the lines for the bones		
-		prog->bind();
+		bonesprog->bind();
 		//send the matrices to the shaders
-		glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, &P[0][0]);
-		glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, &V[0][0]);
-		glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-		glUniform3fv(prog->getUniform("campos"), 1, &mycam.pos[0]);	
+		glUniformMatrix4fv(bonesprog->getUniform("P"), 1, GL_FALSE, &P[0][0]);
+		glUniformMatrix4fv(bonesprog->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glUniform3fv(bonesprog->getUniform("campos"), 1, &mycam.pos[0]);	
 		glBindVertexArray(VertexArrayID);
 		//actually draw from vertex 0, 3 vertices
 		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, (void*)0);
@@ -1175,8 +1175,8 @@ public:
 		glm::mat4 rotXBones = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //rotate the bones
 		glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)); //scale the bones
 		M = TransBones * rotXBones* S;
-		glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-		glUniformMatrix4fv(prog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
+		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick-4);
 
 		//draw left set of bones
@@ -1185,8 +1185,8 @@ public:
 		rotXBones = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //rotate the bones
 		S = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)); //scale the bones
 		M = TransBones * rotXBones* S;
-		glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-		glUniformMatrix4fv(prog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
+		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick - 4);
 
 
@@ -1212,7 +1212,7 @@ public:
         
 
         glBindVertexArray(0);
-		prog->unbind();
+		bonesprog->unbind();
         
         
 
@@ -1242,11 +1242,11 @@ public:
 
 
 		//Draw the temporary Fire Emblem sprites
-        billboards->bind();
+        /*billboards->bind();
         glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
         glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
         glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-        glBindVertexArray(BillboardVAOID);
+        glBindVertexArray(BillboardVAOID);*/
 
 		//temporary code, will be moved to buttons, make the sprites move
 		//static double moveCharX = 0;
