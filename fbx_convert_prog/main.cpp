@@ -729,9 +729,9 @@ public:
 		str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
 		data = stbi_load(filepath, &width, &height, &channels, 4);
-		glGenTextures(1, &spearTex);
+		glGenTextures(1, &axeTex);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, spearTex);
+		glBindTexture(GL_TEXTURE_2D, axeTex);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST); //Use nearest_nearest or linear_nearest
@@ -741,10 +741,10 @@ public:
 
 		//[TWOTEXTURES] sword units
 		//set the 2 textures to the correct samplers in the fragment shader:
-		Tex1Location = glGetUniformLocation(spearUnits->pid, "tex");//tex, tex2... sampler in the fragment shader
-		Tex2Location = glGetUniformLocation(spearUnits->pid, "tex2");
+		Tex1Location = glGetUniformLocation(axeUnits->pid, "tex");//tex, tex2... sampler in the fragment shader
+		Tex2Location = glGetUniformLocation(axeUnits->pid, "tex2");
 		// Then bind the uniform samplers to texture units:
-		glUseProgram(spearUnits->pid);
+		glUseProgram(axeUnits->pid);
 		glUniform1i(Tex1Location, 0);
 		glUniform1i(Tex2Location, 1);
 
@@ -863,8 +863,9 @@ public:
             }
         }
         
-		vector<vector<Character>> team1, team2;
+		//// SET UP THE CHARACTERS TO SEND TO THE GAME BOARD ////
 
+		vector<vector<Character>> team1, team2;
         // team 1 test chars
         weapon curweapon = sword;
         vec3 default = vec3(0, 0, 0);
@@ -872,12 +873,12 @@ public:
 		//Team 1
 		charPos.at(0).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex, 1);
 		charPos.at(0).at(1) = Character("Sword Master", default, spear, false, 25, spearTex, 1);
-		charPos.at(0).at(2) = Character("Sword Master", default, sword, false, 25, swrdTex, 1);
+		charPos.at(0).at(2) = Character("Sword Master", default, axe, false, 25, axeTex, 1);
 		charPos.at(0).at(3) = Character("Sword Master", default, sword, false, 25, swrdTex, 1);
 		//Team 2
 		charPos.at(6).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex, 2);
 		charPos.at(6).at(1) = Character("Sword Master", default, spear, false, 25, spearTex, 2);
-		charPos.at(6).at(2) = Character("Sword Master", default, sword, false, 25, swrdTex, 2);
+		charPos.at(6).at(2) = Character("Sword Master", default, axe, false, 25, axeTex, 2);
 		charPos.at(6).at(3) = Character("Sword Master", default, sword, false, 25, swrdTex, 2);
 
 		////OLD TEMP UNITS
@@ -1334,7 +1335,7 @@ public:
 
 		//Draw the new animated sprites based on Weapon class
 		//Vars for the loop
-		static float t_swrd = 0, t_spear = 0;
+		static float t_swrd = 0, t_spear = 0, t_axe = 0;
 		static vec2 offset1, offset2;
 		static int firstLoop = 0; //use to initialize the offsets once
 
@@ -1426,8 +1427,8 @@ public:
 				if (t_spear >= 1)
 				{
 					t_spear = 0; //reset t
-								//update the 1st offset
-					offset1.x += updateX;
+					//update the 1st offset
+					offset1.x += updateX;  //WE PROBABLY NEED PER SHADER OFFSETS SO ONE FOR EACH SHADER/UNIT TYPE
 					if (offset1.x >= 1.00)
 					{
 						offset1.x = 0;
@@ -1464,6 +1465,60 @@ public:
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 			}
 			if (board.characters[i].weaponclass == axe)
+			{
+				axeUnits->bind();
+				glUniformMatrix4fv(axeUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
+				glUniformMatrix4fv(axeUnits->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+				glUniformMatrix4fv(axeUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				glBindVertexArray(BillboardVAOID);
+
+				//cout << "found char with spear" << "\n";
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
+
+				//UPDATE THE SPRITE
+				t_axe += 0.25; //interpolation value for sword Units
+				if (t_axe >= 1)
+				{
+					t_axe = 0; //reset t
+					//update the 1st offset
+					offset1.x += updateX;  //WE PROBABLY NEED PER SHADER OFFSETS SO ONE FOR EACH SHADER/UNIT TYPE
+					if (offset1.x >= 1.00)
+					{
+						offset1.x = 0;
+						offset1.y += updateY;
+						if (offset1.y >= 1.00)
+						{
+							offset1.y = 0;
+						}
+					}
+					//update the 2nd offset
+					offset2.x += updateX;
+					if (offset2.x >= 1.00)
+					{
+						offset2.x = 0;
+						offset2.y += updateY;
+						if (offset2.y >= 1.00)
+						{
+							offset2.y = 0;
+						}
+					}
+
+				}
+				//bind uniforms to the shader
+				glUniform1f(axeUnits->getUniform("t"), t_axe);
+				glUniform2fv(axeUnits->getUniform("offset1"), 1, &offset1[0]);
+				glUniform2fv(axeUnits->getUniform("offset2"), 1, &offset2[0]);
+				glUniform1i(axeUnits->getUniform("team"), board.characters[i].team);
+
+				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
+				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
+				//int moveCharacter(int charX, int charY, int destX, int destY);
+				M = TransSprites * Vi;
+				glUniformMatrix4fv(axeUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+			}
+			if (board.characters[i].weaponclass == magic)
 			{
 				;
 			}
