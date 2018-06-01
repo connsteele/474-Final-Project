@@ -354,7 +354,7 @@ public:
 	WindowManager * windowManager = nullptr;
 
 	// Our shader program
-	std::shared_ptr<Program> prog, psky, pplane, bricks, billboards, swordUnits;
+	std::shared_ptr<Program> prog, psky, pplane, bricks, billboards, swordUnits, spearUnits, axeUnits, magicUnits;
 
 	// Contains vertex information for OpenGL
 	GLuint VertexArrayID, BillboardVAOID;
@@ -367,7 +367,7 @@ public:
 	//texture data
     GLuint Texture, Texture1, Texture2, Texture3;
 	GLuint TexHector, TexMarth;
-	GLuint swrdTex1, swrdTex2;
+	GLuint swrdTex, spearTex;
 	//line
 	Line linerender;
 	Line smoothrender;
@@ -673,13 +673,14 @@ public:
 		char filepath[1000];
 
 		//ANIMATED SPRITE TEXTURES
+		//sword units
 		string str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
 		unsigned char* data = stbi_load(filepath, &width, &height, &channels, 4);
-		glGenTextures(1, &swrdTex1);
+		glGenTextures(1, &swrdTex);
 		//glGenTextures(1, &swrdTex2);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, swrdTex1);
+		glBindTexture(GL_TEXTURE_2D, swrdTex);
 		//glBindTexture(GL_TEXTURE_2D, swrdTex2);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // changed from GL_MIRRORED_REPEAT
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
@@ -689,7 +690,7 @@ public:
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 
-		//[TWOTEXTURES]
+		//[TWOTEXTURES] sword units
 		//set the 2 textures to the correct samplers in the fragment shader:
 		GLuint Tex1Location = glGetUniformLocation(swordUnits->pid, "tex");//tex, tex2... sampler in the fragment shader
 		GLuint Tex2Location = glGetUniformLocation(swordUnits->pid, "tex2");
@@ -697,60 +698,87 @@ public:
 		glUseProgram(swordUnits->pid);
 		glUniform1i(Tex1Location, 0);
 		glUniform1i(Tex2Location, 1);
+		
 
-
-		//OLD SPRITE TEXTURES
-		str = resourceDirectory + "/lyn.png"; // actually get the first sprite texture
+		//spear units
+		str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
 		data = stbi_load(filepath, &width, &height, &channels, 4);
-		glGenTextures(1, &Texture);
+		glGenTextures(1, &spearTex);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glBindTexture(GL_TEXTURE_2D, spearTex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-        str = resourceDirectory + "/camilla.png"; // actually get the second sprite texture
-        strcpy(filepath, str.c_str());
-        data = stbi_load(filepath, &width, &height, &channels, 4);
-        glGenTextures(1, &Texture1);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, Texture1);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-		str = resourceDirectory + "/lahector.png"; // actually get the third sprite texture
-		strcpy(filepath, str.c_str());
-		data = stbi_load(filepath, &width, &height, &channels, 4);
-		glGenTextures(1, &TexHector);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, TexHector);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST); //TEST DIFFERENT PARAMETER FOR HIGHER QUALITY SPRITE RENDERING
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST); //Use nearest_nearest or linear_nearest
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-		str = resourceDirectory + "/marth.png"; // actually get the third sprite texture
-		strcpy(filepath, str.c_str());
-		data = stbi_load(filepath, &width, &height, &channels, 4);
-		glGenTextures(1, &TexMarth);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, TexMarth);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
+
+		//[TWOTEXTURES] sword units
+		//set the 2 textures to the correct samplers in the fragment shader:
+		Tex1Location = glGetUniformLocation(spearUnits->pid, "tex");//tex, tex2... sampler in the fragment shader
+		Tex2Location = glGetUniformLocation(spearUnits->pid, "tex2");
+		// Then bind the uniform samplers to texture units:
+		glUseProgram(spearUnits->pid);
+		glUniform1i(Tex1Location, 0);
+		glUniform1i(Tex2Location, 1);
+
+
+
+
+		//OLD SPRITE TEXTURES
+		//str = resourceDirectory + "/lyn.png"; // actually get the first sprite texture
+		//strcpy(filepath, str.c_str());
+		//data = stbi_load(filepath, &width, &height, &channels, 4);
+		//glGenTextures(1, &Texture);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, Texture);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		//glGenerateMipmap(GL_TEXTURE_2D);
+
+  //      str = resourceDirectory + "/camilla.png"; // actually get the second sprite texture
+  //      strcpy(filepath, str.c_str());
+  //      data = stbi_load(filepath, &width, &height, &channels, 4);
+  //      glGenTextures(1, &Texture1);
+  //      glActiveTexture(GL_TEXTURE0);
+  //      glBindTexture(GL_TEXTURE_2D, Texture1);
+  //      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+  //      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+  //      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  //      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  //      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  //      glGenerateMipmap(GL_TEXTURE_2D);
+
+		//str = resourceDirectory + "/lahector.png"; // actually get the third sprite texture
+		//strcpy(filepath, str.c_str());
+		//data = stbi_load(filepath, &width, &height, &channels, 4);
+		//glGenTextures(1, &TexHector);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, TexHector);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST); //TEST DIFFERENT PARAMETER FOR HIGHER QUALITY SPRITE RENDERING
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		//glGenerateMipmap(GL_TEXTURE_2D);
+
+		//str = resourceDirectory + "/marth.png"; // actually get the third sprite texture
+		//strcpy(filepath, str.c_str());
+		//data = stbi_load(filepath, &width, &height, &channels, 4);
+		//glGenTextures(1, &TexMarth);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, TexMarth);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		//glGenerateMipmap(GL_TEXTURE_2D);
 
 		//texture 2
 		str = resourceDirectory + "/skyBox.jpg"; 
@@ -819,15 +847,15 @@ public:
         vec3 default = vec3(0, 0, 0);
 		//NEW UNITS
 		//Team 1
-		charPos.at(0).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex1, 1);
-		charPos.at(0).at(1) = Character("Sword Master", default, sword, false, 25, swrdTex1, 1);
-		charPos.at(0).at(2) = Character("Sword Master", default, sword, false, 25, swrdTex1, 1);
-		charPos.at(0).at(3) = Character("Sword Master", default, sword, false, 25, swrdTex1, 1);
+		charPos.at(0).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex, 1);
+		charPos.at(0).at(1) = Character("Sword Master", default, sword, false, 25, swrdTex, 1);
+		charPos.at(0).at(2) = Character("Sword Master", default, sword, false, 25, swrdTex, 1);
+		charPos.at(0).at(3) = Character("Sword Master", default, sword, false, 25, swrdTex, 1);
 		//Team 2
-		charPos.at(6).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex1, 2);
-		charPos.at(6).at(1) = Character("Sword Master", default, sword, false, 25, swrdTex1, 2);
-		charPos.at(6).at(2) = Character("Sword Master", default, sword, false, 25, swrdTex1, 2);
-		charPos.at(6).at(3) = Character("Sword Master", default, sword, false, 25, swrdTex1, 2);
+		charPos.at(6).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex, 2);
+		charPos.at(6).at(1) = Character("Sword Master", default, sword, false, 25, swrdTex, 2);
+		charPos.at(6).at(2) = Character("Sword Master", default, sword, false, 25, swrdTex, 2);
+		charPos.at(6).at(3) = Character("Sword Master", default, sword, false, 25, swrdTex, 2);
 
 		////OLD TEMP UNITS
   //      charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture, 1);  // load the character spite textures
@@ -878,7 +906,8 @@ public:
 		prog->addAttribute("vertPos");
 		prog->addAttribute("vertimat");
 
-		//Sword Lord Sprite Shader
+		//// UNIT SHADERS ////
+		//Sword Unit Sprite Shader
 		swordUnits = std::make_shared<Program>();
 		swordUnits->setVerbose(true);
 		swordUnits->setShaderNames(resourceDirectory + "/5x7sprite_vertex.glsl", resourceDirectory + "/5x7sprite_fragment.glsl");
@@ -902,7 +931,30 @@ public:
 		swordUnits->addUniform("t");
 		swordUnits->addUniform("team");
 
+		//spear unit shader //
+		spearUnits = std::make_shared<Program>();
+		spearUnits->setVerbose(true);
+		spearUnits->setShaderNames(resourceDirectory + "/5x7sprite_vertex.glsl", resourceDirectory + "/5x7sprite_fragment.glsl");
+		if (!spearUnits->init())
+		{
+			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+			exit(1);
+		}
+		spearUnits->addUniform("P");
+		spearUnits->addUniform("V");
+		spearUnits->addUniform("M");
+		spearUnits->addUniform("campos");
+		spearUnits->addAttribute("vertPos");
+		spearUnits->addAttribute("vertNor");
+		spearUnits->addAttribute("vertTex");
+		//add uniforms for interpolation
+		spearUnits->addUniform("offset1");
+		spearUnits->addUniform("offset2");
+		spearUnits->addUniform("t");
+		spearUnits->addUniform("team");
 
+
+		// skybox shader //
 		psky = std::make_shared<Program>();
 		psky->setVerbose(true);
 		psky->setShaderNames(resourceDirectory + "/skyvertex.glsl", resourceDirectory + "/skyfrag.glsl");
@@ -919,6 +971,7 @@ public:
 		psky->addAttribute("vertNor");
 		psky->addAttribute("vertTex");
 
+		//unused?
 		pplane = std::make_shared<Program>();
 		pplane->setVerbose(true);
 		pplane->setShaderNames(resourceDirectory + "/plane_vertex.glsl", resourceDirectory + "/plane_frag.glsl");
@@ -935,6 +988,7 @@ public:
 		pplane->addAttribute("vertNor");
 		pplane->addAttribute("vertTex");
 
+		//Terrain Shader
         bricks = std::make_shared<Program>();
         bricks->setVerbose(true);
         bricks->setShaderNames(resourceDirectory + "/brick_vertex.glsl", resourceDirectory + "/brick_fragment.glsl");
@@ -947,6 +1001,7 @@ public:
         bricks->addAttribute("vertNor");
         bricks->addAttribute("vertTex");
 
+		//Now unused: non-animated billboard sprite shader
         billboards = std::make_shared<Program>();
         billboards->setVerbose(true);
         billboards->setShaderNames(resourceDirectory + "/vert_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
@@ -1199,22 +1254,22 @@ public:
 		//moveCharX += 0.10;  // temp
 		//moveCharY += 0.10;  // 
 
-        for (int i = 0; i < board.characters.size(); i++) {
-			if (board.characters[i].weaponclass != sword)
-			{
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
-				//+= glm::vec3(moveCharX, 0, moveCharY)
-				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position); //Our y and z planes are swapped 
-				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
-				//int moveCharacter(int charX, int charY, int destX, int destY);
-				M = TransSprites * Vi;
-				glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
-			}
-            
-        }
-        billboards->unbind();
+   //     for (int i = 0; i < board.characters.size(); i++) {
+			//if (board.characters[i].weaponclass != sword)
+			//{
+			//	glActiveTexture(GL_TEXTURE0);
+			//	glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
+			//	//+= glm::vec3(moveCharX, 0, moveCharY)
+			//	glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position); //Our y and z planes are swapped 
+			//	//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
+			//	//int moveCharacter(int charX, int charY, int destX, int destY);
+			//	M = TransSprites * Vi;
+			//	glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+			//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+			//}
+   //         
+   //     }
+   //     billboards->unbind();
 
 
 		//Draw the new animated sprites based on Weapon class
@@ -1250,6 +1305,7 @@ public:
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);				
 
+				//UPDATE THE SPRITE
 				t_swrd += 0.25; //interpolation value for sword Units
 				if (t_swrd >= 1)
 				{
@@ -1276,7 +1332,6 @@ public:
 							offset2.y = 0;
 						}
 					}
-					//cout << "t is: " << t_swrd << " off1 is x,y: " << offset1.x << " " << offset1.y << " off2 is x,y  " << offset2.x << " " << offset2.y << endl;
 
 				}
 				//bind uniforms to the shader
