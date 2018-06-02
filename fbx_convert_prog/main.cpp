@@ -739,7 +739,7 @@ public:
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-		//[TWOTEXTURES] sword units
+		//[TWOTEXTURES] axe units
 		//set the 2 textures to the correct samplers in the fragment shader:
 		Tex1Location = glGetUniformLocation(axeUnits->pid, "tex");//tex, tex2... sampler in the fragment shader
 		Tex2Location = glGetUniformLocation(axeUnits->pid, "tex2");
@@ -748,6 +748,28 @@ public:
 		glUniform1i(Tex1Location, 0);
 		glUniform1i(Tex2Location, 1);
 
+		//Magic Units
+		str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
+		strcpy(filepath, str.c_str());
+		data = stbi_load(filepath, &width, &height, &channels, 4);
+		glGenTextures(1, &magicTex);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, magicTex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST); //Use nearest_nearest or linear_nearest
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		//[TWOTEXTURES] magic units
+		//set the 2 textures to the correct samplers in the fragment shader:
+		Tex1Location = glGetUniformLocation(magicUnits->pid, "tex");//tex, tex2... sampler in the fragment shader
+		Tex2Location = glGetUniformLocation(magicUnits->pid, "tex2");
+		// Then bind the uniform samplers to texture units:
+		glUseProgram(magicUnits->pid);
+		glUniform1i(Tex1Location, 0);
+		glUniform1i(Tex2Location, 1);
 
 
 		//OLD SPRITE TEXTURES
@@ -874,12 +896,12 @@ public:
 		charPos.at(0).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex, 1);
 		charPos.at(0).at(1) = Character("Sword Master", default, spear, false, 25, spearTex, 1);
 		charPos.at(0).at(2) = Character("Sword Master", default, axe, false, 25, axeTex, 1);
-		charPos.at(0).at(3) = Character("Sword Master", default, sword, false, 25, swrdTex, 1);
+		charPos.at(0).at(3) = Character("Sword Master", default, magic, false, 25, magicTex, 1);
 		//Team 2
 		charPos.at(6).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex, 2);
 		charPos.at(6).at(1) = Character("Sword Master", default, spear, false, 25, spearTex, 2);
 		charPos.at(6).at(2) = Character("Sword Master", default, axe, false, 25, axeTex, 2);
-		charPos.at(6).at(3) = Character("Sword Master", default, sword, false, 25, swrdTex, 2);
+		charPos.at(6).at(3) = Character("Sword Master", default, magic, false, 25, magicTex, 2);
 
 		////OLD TEMP UNITS
   //      charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture, 1);  // load the character spite textures
@@ -998,6 +1020,28 @@ public:
 		axeUnits->addUniform("offset2");
 		axeUnits->addUniform("t");
 		axeUnits->addUniform("team");
+
+		//magic units shader
+		magicUnits = std::make_shared<Program>();
+		magicUnits->setVerbose(true);
+		magicUnits->setShaderNames(resourceDirectory + "/5x7sprite_vertex.glsl", resourceDirectory + "/5x7sprite_fragment.glsl");
+		if (!magicUnits->init())
+		{
+			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+			exit(1);
+		}
+		magicUnits->addUniform("P");
+		magicUnits->addUniform("V");
+		magicUnits->addUniform("M");
+		magicUnits->addUniform("campos");
+		magicUnits->addAttribute("vertPos");
+		magicUnits->addAttribute("vertNor");
+		magicUnits->addAttribute("vertTex");
+		//add uniforms for interpolation
+		magicUnits->addUniform("offset1");
+		magicUnits->addUniform("offset2");
+		magicUnits->addUniform("t");
+		magicUnits->addUniform("team");
 
 
 		// skybox shader //
@@ -1527,7 +1571,57 @@ public:
 			}
 			if (board.characters[i].weaponclass == magic)
 			{
-				;
+				magicUnits->bind();
+				glUniformMatrix4fv(magicUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
+				glUniformMatrix4fv(magicUnits->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+				glUniformMatrix4fv(magicUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				glBindVertexArray(BillboardVAOID);
+
+				//cout << "found char with spear" << "\n";
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
+
+				//UPDATE THE SPRITE
+				t_magic += 0.25; //interpolation value for sword Units
+				if (t_magic >= 1)
+				{
+					t_magic = 0; //reset t
+							   //update the 1st offset
+					offset1magic.x += updateX;  //WE PROBABLY NEED PER SHADER UPDATES
+					if (offset1magic.x >= 1.00)
+					{
+						offset1magic.x = 0;
+						offset1magic.y += updateY;
+						if (offset1magic.y >= 1.00)
+						{
+							offset1magic.y = 0;
+						}
+					}
+					//update the 2nd offset
+					offset2magic.x += updateX;
+					if (offset2magic.x >= 1.00)
+					{
+						offset2magic.x = 0;
+						offset2magic.y += updateY;
+						if (offset2magic.y >= 1.00)
+						{
+							offset2magic.y = 0;
+						}
+					}
+
+				}
+				//bind uniforms to the shader
+				glUniform1f(magicUnits->getUniform("t"), t_magic);
+				glUniform2fv(magicUnits->getUniform("offset1"), 1, &offset1magic[0]);
+				glUniform2fv(magicUnits->getUniform("offset2"), 1, &offset2magic[0]);
+				glUniform1i(magicUnits->getUniform("team"), board.characters[i].team);
+
+				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
+				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
+				//int moveCharacter(int charX, int charY, int destX, int destY);
+				M = TransSprites * Vi;
+				glUniformMatrix4fv(magicUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 			}
 			
 		}
