@@ -1084,8 +1084,8 @@ public:
         bricks->addAttribute("vertNor");
         bricks->addAttribute("vertTex");
 
-		//Now unused: non-animated billboard sprite shader
-        /*billboards = std::make_shared<Program>();
+		//Repurposed for background textures and animated elements such as damage sprites or moving background elements
+        billboards = std::make_shared<Program>();
         billboards->setVerbose(true);
         billboards->setShaderNames(resourceDirectory + "/vert_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
         if (!billboards->init())
@@ -1099,7 +1099,7 @@ public:
         billboards->addUniform("campos");
         billboards->addAttribute("vertPos");
         billboards->addAttribute("vertNor");
-        billboards->addAttribute("vertTex");*/
+        billboards->addAttribute("vertTex");
 	}
 
 	double overheadZoomLevel = 0;
@@ -1296,6 +1296,7 @@ public:
 		glBindTexture(GL_TEXTURE_2D, Texture);
 
 		//// COMBAT DRAWING, MAKE THIS GRID DRAW A LARGE TERRAIN FOR BATTLES, CAN PUSH WHOLE COMBAT SCENE FURTHER AWAY FROM OVERHEAD SCENE IF NEEDED ////
+
 		//draw right set of bones
 		glm::mat4 TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
 		sangle = 3.1415926 / 2.;
@@ -1315,6 +1316,16 @@ public:
 		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick - 4);
+
+		//Draw the billboards that have the background textures on them for the combat scene
+		billboards->bind();
+		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
+		glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+		//need to bind a texture
+		glm::mat4 backgroundTranslation = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -15.0f));
+		glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glBindVertexArray(BillboardVAOID);
+		billboards->unbind();
 
 
 		//render combat plane
@@ -1367,36 +1378,6 @@ public:
         
         bricks->unbind();
 
-
-		//Draw the temporary Fire Emblem sprites
-        /*billboards->bind();
-        glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
-        glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
-        glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-        glBindVertexArray(BillboardVAOID);*/
-
-		//temporary code, will be moved to buttons, make the sprites move
-		//static double moveCharX = 0;
-		//static double moveCharY = 0;
-		//moveCharX += 0.10;  // temp
-		//moveCharY += 0.10;  // 
-
-   //     for (int i = 0; i < board.characters.size(); i++) {
-			//if (board.characters[i].weaponclass != sword)
-			//{
-			//	glActiveTexture(GL_TEXTURE0);
-			//	glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
-			//	//+= glm::vec3(moveCharX, 0, moveCharY)
-			//	glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position); //Our y and z planes are swapped 
-			//	//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
-			//	//int moveCharacter(int charX, int charY, int destX, int destY);
-			//	M = TransSprites * Vi;
-			//	glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-			//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
-			//}
-   //         
-   //     }
-   //     billboards->unbind();
 
 
 		//Draw the new animated sprites based on Weapon class
