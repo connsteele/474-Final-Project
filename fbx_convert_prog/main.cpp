@@ -1181,21 +1181,26 @@ public:
 		int anim_step_width_ms = ms_length / keyframe_length;
 		static int frame = 0;  
 		static float play_anim_t = 0; // interpolation value between 2 different animations
+		int num_animations = 2;
+		int framezerocount = 0;
+		
 		if (totaltime_untilframe_ms >= anim_step_width_ms)
-			{
+		{
 			totaltime_untilframe_ms = 0;
 			frame++;
-			}
+		}
 		if (frame > keyframe_length)  // Loop the animation if frames run out of bounds
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
+			framezerocount++;
 			anim_num++;
 			if (anim_num > 1) {
 				anim_num = 0;
 			}
+
 		}
-	
+
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
 		root->myplayanimation(frame, 0, 1, play_anim_t);
@@ -1205,7 +1210,7 @@ public:
 		else if (anim_num == 0 && play_anim_t > 0) {
 			play_anim_t -= frametime;
 		}
-
+		
 		// Get current frame buffer size.
 		int width, height;
 		glfwGetFramebufferSize(windowManager->getHandle(), &width, &height);
