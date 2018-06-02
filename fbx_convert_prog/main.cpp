@@ -895,15 +895,15 @@ public:
         vec3 default = vec3(0, 0, 0);
 		//NEW UNITS
 		//Team 1
-		charPos.at(0).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex, 1);
-		charPos.at(0).at(1) = Character("Sword Master", default, spear, false, 25, spearTex, 1);
-		charPos.at(0).at(2) = Character("Sword Master", default, axe, false, 25, axeTex, 1);
-		charPos.at(0).at(3) = Character("Sword Master", default, magic, false, 25, magicTex, 1);
+		charPos.at(0).at(0) = Character("Sword Lord Team 1", default, sword, false, 25, swrdTex, 1);
+		charPos.at(0).at(1) = Character("Spear Wielder Team 1", default, spear, false, 25, spearTex, 1);
+		charPos.at(0).at(2) = Character("Axe Master Team 1", default, axe, false, 25, axeTex, 1);
+		charPos.at(0).at(3) = Character("Mage Adpet Team 1", default, magic, false, 25, magicTex, 1);
 		//Team 2
-		charPos.at(6).at(0) = Character("Sword Master", default, sword, false, 25, swrdTex, 2);
-		charPos.at(6).at(1) = Character("Sword Master", default, spear, false, 25, spearTex, 2);
-		charPos.at(6).at(2) = Character("Sword Master", default, axe, false, 25, axeTex, 2);
-		charPos.at(6).at(3) = Character("Sword Master", default, magic, false, 25, magicTex, 2);
+		charPos.at(6).at(0) = Character("Sword Lord Team 2", default, sword, false, 25, swrdTex, 2);
+		charPos.at(6).at(1) = Character("Spear Wielder Team 2", default, spear, false, 25, spearTex, 2);
+		charPos.at(6).at(2) = Character("Axe Master Team 2", default, axe, false, 25, axeTex, 2);
+		charPos.at(6).at(3) = Character("Mage Adpet Team 2", default, magic, false, 25, magicTex, 2);
 
 		////OLD TEMP UNITS
   //      charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture, 1);  // load the character spite textures
@@ -1134,13 +1134,31 @@ public:
 
 	}
 
+	void moveCameraScene() //calling this function alters the current camera scene, same functionality as pressing R
+	{
+		if (curcamPos == 0)
+		{
+			//overhead orientation
+			mycam.pos = glm::vec3(-0.75, -10, -9);
+			mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
+			mycam.rot.y = 0;
+			curcamPos = 1; //switch for next press
+		}
+		else if (curcamPos == 1)
+		{
+			//up close combat orientation
+			mycam.pos = glm::vec3(6, -3, 11);
+			mycam.rot.x = 0.3; // Camera orientaion
+			mycam.rot.y = 1;
+			curcamPos = 0; //switch for next press
+		}
+	}
+
 	/****DRAW
 	This is the most important function in your program - this is where you
 	will actually issue the commands to draw any geometry you have set up to
 	draw
 	********/
-
-	
 	void render()
 	{
 		glEnable(GL_BLEND);
@@ -1626,14 +1644,18 @@ public:
 			}
 
 			//Check to see if any characters are overlapping, theres probably a more efficent way to do this
-			for (int i = 0; i < board.characters.size(); i++)
+			for (int j = 0; j < board.characters.size(); j++)
 			{
-
+				//if units have the same postion, are on different teams and dont have the same name
+				if ( (board.characters[i].position == board.characters[j].position) && (board.characters[i].team != board.characters[j].team) &&
+				   ( board.characters[i].name != board.characters[j].name ) )
+				{
+					//issues with doing this multiple times, works on the first go
+					moveCameraScene(); //make it so this function kicks off the battle scene animation
+					cout << "GO TO BATTLE SCENE\n";
+				}
 			}
-			if (board.characters[i].position == board.characters[i].position)
-			{
-
-			}
+			
 			
 		} //end loop through all character on board
 		

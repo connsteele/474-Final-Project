@@ -101,9 +101,9 @@ public:
 
 			quat qf = slerp(qr, qe, f);
 			vec3 tf = mix(tr, te, f);
-			cout << "f " << f << endl;
+			//cout << "f " << f << endl;  //Using this will slow the entire game down but will check the floating point
 
-			if ( f >= 0.0)
+			if ( f >= 0.0) //translate by the amount the first animation skeleton ends at
 				tf = animation[animationnum]->keyframes[mysize].translation;
 
 			mat4 M = mat4(qf);
