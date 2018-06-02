@@ -47,7 +47,7 @@ bool WindowManager::init(int const width, int const height)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
 	// Create a windowed mode window and its OpenGL context.
-	windowHandle = glfwCreateWindow(width, height, "hello triangle", nullptr, nullptr);
+	windowHandle = glfwCreateWindow(width, height, "Tactics Emblem", nullptr, nullptr); //window name
 	if (! windowHandle)
 	{
 		glfwTerminate();
