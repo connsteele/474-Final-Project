@@ -426,23 +426,23 @@ public:
 		{
 			// only move charaters if they are isCharacter = 1 otherwise regard them as gameplay erased from gameboard
 			board.characters[0].position.z -= 1; //only move the first char
-			board.characters[1].position.z -= 1;
+			//board.characters[1].position.z -= 1;
 		}
 		if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE)
 		{
 			board.characters[0].position.z += 1; //only move the first char
-			board.characters[1].position.z += 1;
+			//board.characters[1].position.z += 1;
 		}
 		if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
 		{
 			board.characters[0].position.x -= 1; //only move the first char
-			board.characters[1].position.x -= 1;
+			//board.characters[1].position.x -= 1;
 		}
 		if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
 		{
 
 			board.characters[0].position.x += 1; //only move the first char
-			board.characters[1].position.x += 1;
+			//board.characters[1].position.x += 1;
 		}
 
 		
@@ -1402,7 +1402,7 @@ public:
 		}
 		
 
-		for (int i = 0; i < board.characters.size(); i++) //find a way to speed this up for animation playback
+		for (int i = 0; i < board.characters.size(); i++) //Check every character on the game board
 		{
 			//cout << i << "\n";
 			if (board.characters[i].weaponclass == sword) //draw sword units to the board
@@ -1469,7 +1469,6 @@ public:
 				glUniformMatrix4fv(spearUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glBindVertexArray(BillboardVAOID);
 
-				//cout << "found char with spear" << "\n";
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);
 
@@ -1623,8 +1622,18 @@ public:
 				glUniformMatrix4fv(magicUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 			}
+
+			//Check to see if any characters are overlapping, theres probably a more efficent way to do this
+			for (int i = 0; i < board.characters.size(); i++)
+			{
+
+			}
+			if (board.characters[i].position == board.characters[i].position)
+			{
+
+			}
 			
-		}
+		} //end loop through all character on board
 		
 
 
