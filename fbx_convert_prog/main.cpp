@@ -704,7 +704,7 @@ public:
 		
 
 		//spear units
-		str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
+		str = resourceDirectory + "/tempLancer.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
 		data = stbi_load(filepath, &width, &height, &channels, 4);
 		glGenTextures(1, &spearTex);
@@ -728,7 +728,7 @@ public:
 
 
 		//Axe Units
-		str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
+		str = resourceDirectory + "/tempAxe.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
 		data = stbi_load(filepath, &width, &height, &channels, 4);
 		glGenTextures(1, &axeTex);
@@ -751,7 +751,7 @@ public:
 		glUniform1i(Tex2Location, 1);
 
 		//Magic Units
-		str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
+		str = resourceDirectory + "/tempMage.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
 		data = stbi_load(filepath, &width, &height, &channels, 4);
 		glGenTextures(1, &magicTex);
@@ -895,15 +895,15 @@ public:
         vec3 default = vec3(0, 0, 0);
 		//NEW UNITS
 		//Team 1
-		charPos.at(0).at(0) = Character("Sword Lord Team 1", default, sword, false, 25, swrdTex, 1);
-		charPos.at(0).at(1) = Character("Spear Wielder Team 1", default, spear, false, 25, spearTex, 1);
-		charPos.at(0).at(2) = Character("Axe Master Team 1", default, axe, false, 25, axeTex, 1);
-		charPos.at(0).at(3) = Character("Mage Adpet Team 1", default, magic, false, 25, magicTex, 1);
+		charPos.at(0).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 1);
+		charPos.at(0).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 1);
+		charPos.at(0).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 1);
+		charPos.at(0).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 1);
 		//Team 2
-		charPos.at(6).at(0) = Character("Sword Lord Team 2", default, sword, false, 25, swrdTex, 2);
-		charPos.at(6).at(1) = Character("Spear Wielder Team 2", default, spear, false, 25, spearTex, 2);
-		charPos.at(6).at(2) = Character("Axe Master Team 2", default, axe, false, 25, axeTex, 2);
-		charPos.at(6).at(3) = Character("Mage Adpet Team 2", default, magic, false, 25, magicTex, 2);
+		charPos.at(6).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 2);
+		charPos.at(6).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 2);
+		charPos.at(6).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 2);
+		charPos.at(6).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 2);
 
 		////OLD TEMP UNITS
   //      charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture, 1);  // load the character spite textures
@@ -1646,11 +1646,12 @@ public:
 			//Check to see if any characters are overlapping, theres probably a more efficent way to do this
 			for (int j = 0; j < board.characters.size(); j++)
 			{
-				//if units have the same postion, are on different teams and dont have the same name
-				if ( (board.characters[i].position == board.characters[j].position) && (board.characters[i].team != board.characters[j].team) &&
-				   ( board.characters[i].name != board.characters[j].name ) )
+				//Check if units have the same postion and are on different teams
+				if ( (board.characters[i].position == board.characters[j].position) && (board.characters[i].team != board.characters[j].team) )
+				   //( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
 				{
 					//issues with doing this multiple times, works on the first go
+					//add the zoom to game board then transition to battle scene instead of jump cuts
 					moveCameraScene(); //make it so this function kicks off the battle scene animation
 					cout << "GO TO BATTLE SCENE\n";
 				}
