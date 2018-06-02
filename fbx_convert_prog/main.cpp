@@ -252,7 +252,7 @@ void Board::convertCharToPhysicalCoordinates() {
     // uses the 2D array of character positions and sets the character indices array
     // used to set the correct position to draw each character
     int counter = 0;
-    cout << "IN CONVERT\n";
+   // cout << "IN CONVERT\n";
     for (int i = 0; i < boardWidth; i++) {
         for (int j = 0; j < boardHeight; j++) {
             if (hasCharacter(i, j)) {
@@ -264,12 +264,12 @@ void Board::convertCharToPhysicalCoordinates() {
         }
     }
 
-    cout << "character size: " << characters.size();
+    //cout << "character size: " << characters.size();
     for (int i = 0; i < characters.size(); i++) {
         characters[i].position = mapBlocks[characterIndices[i]] + vec3(2.75, 0.1, 5);
-        cout << "character[i] position.x: " << characters[i].position.x;
-        cout << "character[i] position.y: " << characters[i].position.y;
-        cout << "character[i] position.z: " << characters[i].position.z;
+        //cout << "character[i] position.x: " << characters[i].position.x;
+        //cout << "character[i] position.y: " << characters[i].position.y;
+        //cout << "character[i] position.z: " << characters[i].position.z;
     }
 
 }
@@ -557,6 +557,8 @@ public:
 		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root); //82 frames
 		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);  //92 frames
 		root->set_animations(&all_animation,animmat,animmatsize);
+
+		cout << "root name " << root->name << endl;
 
 		// Initialize the Camera Position and orientation
 		mycam.pos = glm::vec3(-0.75, -10, -9); //Set initial Cam pos cented above the map plane
