@@ -1335,11 +1335,11 @@ public:
 		billboards->bind();
 		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
 		glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
-		glm::mat4 backgroundTranslation = glm::translate(glm::mat4(1.0f), glm::vec3(20.0f, -6.0f, -26.0f)); //translate to behind the combat plane, xyz are fine
+		glm::mat4 backgroundTranslation = glm::translate(glm::mat4(1.0f), glm::vec3(9.0f, -2.0f, -21.5f)); //translate to behind the combat plane, xyz are fine, make y absloute( x + 10 ) to keep the bg in a proper location
 		sangle = - 3.1415926 / 3.; //angle to rotate by
 		glm::mat4 rotMtns = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //axis to apply rotation to
 		float Hratio = 2.839961; //horizontal / vertical aspect ratio, old one 3.725
-		float Vscale = 18; //mult this by Hratio to get horizontal scale
+		float Vscale = 10; //mult this by Hratio to get horizontal scale
 		glm::mat4 Smtn = glm::scale(glm::mat4(1.0f), glm::vec3(Vscale * Hratio, Vscale,1.f)); //scale the mtns to the correct size and aspect ratio 
 		M = backgroundTranslation * rotMtns * Smtn;
 		glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]); //upload the model matrix
