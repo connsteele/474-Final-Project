@@ -72,7 +72,7 @@ public:
 
 	void myplayanimation(float keyframenumber, int animationnum, int animation2num, float f) {
 
-		if (animation[animation2num]->keyframes.size() > keyframenumber +1)
+		if (animation[animation2num]->keyframes.size() -1 > keyframenumber)
 		{
 			float ratio = 1. * animation[animationnum]->keyframes.size() / animation[animation2num]->keyframes.size();
 
@@ -101,10 +101,10 @@ public:
 
 			quat qf = slerp(qr, qe, f);
 			vec3 tf = mix(tr, te, f);
-			cout << "f " << f << endl;
-
-			if ( f >= 0.0)
+	
+			if (f >= 0.000) {
 				tf = animation[animationnum]->keyframes[mysize].translation;
+			}
 
 			mat4 M = mat4(qf);
 			mat4 T = translate(mat4(1), tf);
