@@ -81,6 +81,7 @@ public:
 			int framea = fframe;
 			int frameb = fframe + 1;
 			float t = fframe - (int)fframe;
+			int mysize = animation[animationnum]->keyframes.size() - 1;
 
 			quat qa = animation[animationnum]->keyframes[framea * ratio].quaternion;
 			quat qb = animation[animationnum]->keyframes[frameb * ratio].quaternion;
@@ -94,18 +95,16 @@ public:
 			quat qd = animation[animation2num]->keyframes[frameb].quaternion;
 			quat qe = slerp(qc, qd, t);
 
-			vec3 tc = animation[animation2num]->keyframes[framea].translation;
-			vec3 td = animation[animation2num]->keyframes[frameb].translation;
+			vec3 tc = animation[animationnum]->keyframes[mysize].translation;
+			vec3 td = animation[animationnum]->keyframes[mysize].translation;
 			vec3 te = mix(tc, td, t);
 
 			quat qf = slerp(qr, qe, f);
 			vec3 tf = mix(tr, te, f);
-			if (fframe> animation[animationnum]->keyframes.size() ) {
-				tf = vec3(1.645, 0, 0);
-				cout << "POST TF " << tf.x <<" " << tf.y <<" " << tf.z << endl;
-			}
-			
+			cout << "f " << f << endl;
 
+			if ( f >= 0.0)
+				tf = animation[animationnum]->keyframes[mysize].translation;
 
 			mat4 M = mat4(qf);
 			mat4 T = translate(mat4(1), tf);
