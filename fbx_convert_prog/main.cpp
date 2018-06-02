@@ -365,7 +365,7 @@ public:
 	GLuint swrdVertexBufferID, swrdNormBufferID, swrdTexBufferID, swrdIndexBufferID;
 
 	//texture data
-    GLuint Texture, Texture1, Texture2, Texture3;
+    GLuint Texture, Texture1, Texture2, Texture3, bgmountains1;
 	GLuint TexHector, TexMarth;
 	GLuint swrdTex, spearTex, axeTex, magicTex;
 	//line
@@ -845,6 +845,20 @@ public:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
+		//Mountains Texture
+		str = resourceDirectory + "/BrokenTopThreeSistersV2Connor.png";
+		strcpy(filepath, str.c_str());
+		data = stbi_load(filepath, &width, &height, &channels, 4);
+		glGenTextures(1, &bgmountains1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, bgmountains1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST); //minifcation tex param
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); //magnification tex param
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
 		//Skeleton
 		//[TWOTEXTURES]
 		//set the 2 textures to the correct samplers in the fragment shader:
@@ -1135,7 +1149,7 @@ public:
 			mycam.rot.y = 0;
 			//curcamPos = 1; //switch for next press
 		}
-		else if (curcamPos == 1)
+		if (curcamPos == 1)
 		{
 			//up close combat orientation
 			mycam.pos = glm::vec3(6, -3, 11);
@@ -1321,10 +1335,20 @@ public:
 		billboards->bind();
 		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
 		glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
-		//need to bind a texture
-		glm::mat4 backgroundTranslation = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -15.0f));
-		glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-		glBindVertexArray(BillboardVAOID);
+		glm::mat4 backgroundTranslation = glm::translate(glm::mat4(1.0f), glm::vec3(20.0f, -6.0f, -26.0f)); //translate to behind the combat plane, xyz are fine
+		sangle = - 3.1415926 / 3.; //angle to rotate by
+		glm::mat4 rotMtns = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //axis to apply rotation to
+		float Hratio = 2.839961; //horizontal / vertical aspect ratio, old one 3.725
+		float Vscale = 18; //mult this by Hratio to get horizontal scale
+		glm::mat4 Smtn = glm::scale(glm::mat4(1.0f), glm::vec3(Vscale * Hratio, Vscale,1.f)); //scale the mtns to the correct size and aspect ratio 
+		M = backgroundTranslation * rotMtns * Smtn;
+		glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]); //upload the model matrix
+		glBindVertexArray(BillboardVAOID); //use the square billboard, its ok since scale fixes aspect ratio problems
+		//bind texture
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, bgmountains1);
+		//draw the bilboars in here
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 		billboards->unbind();
 
 
