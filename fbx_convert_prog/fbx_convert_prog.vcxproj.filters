@@ -73,12 +73,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\resources\shader_vertex.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\resources\shader_fragment.glsl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="..\resources\brick_fragment.glsl">
       <Filter>Source Files</Filter>
     </None>
@@ -94,5 +88,11 @@
     <None Include="..\resources\5x7sprite_fragment.glsl" />
     <None Include="..\resources\5x7sprite_vertex.glsl" />
     <None Include="..\resources\vert_billboard.glsl" />
+    <None Include="..\resources\skeleton_fragment.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\resources\skeleton_vertex.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

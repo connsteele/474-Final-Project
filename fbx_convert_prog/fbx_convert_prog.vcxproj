@@ -182,8 +182,8 @@
     <None Include="..\resources\plane_frag.glsl" />
     <None Include="..\resources\plane_vertex.glsl" />
     <None Include="..\resources\vert_billboard.glsl" />
-    <None Include="..\resources\shader_fragment.glsl" />
-    <None Include="..\resources\shader_vertex.glsl" />
+    <None Include="..\resources\skeleton_fragment.glsl" />
+    <None Include="..\resources\skeleton_vertex.glsl" />
     <None Include="..\resources\skyfrag.glsl" />
     <None Include="..\resources\skyvertex.glsl" />
     <None Include="packages.config" />

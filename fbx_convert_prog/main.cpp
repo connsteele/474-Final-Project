@@ -446,25 +446,15 @@ public:
 		}
 
 		
-		if (key == GLFW_KEY_R && action == GLFW_RELEASE)  // switch the camera position
+		if (key == GLFW_KEY_R && action == GLFW_PRESS)  // switch the camera position
 		{
-			
-			if (curcamPos == 0)
-			{
-				//overhead orientation
-				mycam.pos = glm::vec3(-0.75, -10, -9);
-				mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
-				mycam.rot.y = 0;
-				curcamPos = 1; //switch for next press
-			}
-			else if (curcamPos == 1)
-			{
-				//up close combat orientation
-				mycam.pos = glm::vec3(6, -3, 11);
-				mycam.rot.x = 0.3; // Camera orientaion
-				mycam.rot.y = 1;
-				curcamPos = 0; //switch for next press
-			}
+			curcamPos == 0;
+			moveCameraScene();
+		}
+		if (key == GLFW_KEY_F && action == GLFW_PRESS)  // switch the camera position
+		{
+			curcamPos == 1;
+			moveCameraScene();
 		}
 		if (key == GLFW_KEY_T && action == GLFW_RELEASE)
 		{
@@ -855,6 +845,7 @@ public:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
+		//Skeleton
 		//[TWOTEXTURES]
 		//set the 2 textures to the correct samplers in the fragment shader:
 		Tex1Location = glGetUniformLocation(bonesprog->pid, "tex");//tex, tex2... sampler in the fragment shader
@@ -940,7 +931,7 @@ public:
 		// Initialize the GLSL program.
 		bonesprog = std::make_shared<Program>();
 		bonesprog->setVerbose(true);
-		bonesprog->setShaderNames(resourceDirectory + "/shader_vertex.glsl", resourceDirectory + "/shader_fragment.glsl");
+		bonesprog->setShaderNames(resourceDirectory + "/skeleton_vertex.glsl", resourceDirectory + "/skeleton_fragment.glsl");
 		if (!bonesprog->init())
 		{
 			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
@@ -1142,7 +1133,7 @@ public:
 			mycam.pos = glm::vec3(-0.75, -10, -9);
 			mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
 			mycam.rot.y = 0;
-			curcamPos = 1; //switch for next press
+			//curcamPos = 1; //switch for next press
 		}
 		else if (curcamPos == 1)
 		{
@@ -1150,7 +1141,8 @@ public:
 			mycam.pos = glm::vec3(6, -3, 11);
 			mycam.rot.x = 0.3; // Camera orientaion
 			mycam.rot.y = 1;
-			curcamPos = 0; //switch for next press
+			//curcamPos = 0; //switch for next press, this line breaks the comabt animation playback FIX HOW CAMERA SCENE WORKS SO IT ONLY CATCHES IF AND DOESNT CHANGE THE VALUE, EXTERNAL
+			//THINGS LIKE THE COMBAT STARTING AND COMBAT ENDING SHOULD CHANGE THE CURRENT CAM POS
 		}
 	}
 
@@ -1184,19 +1176,24 @@ public:
 		int num_animations = 2;
 		int framezerocount = 0;
 		
-		if (totaltime_untilframe_ms >= anim_step_width_ms)
+		if ((totaltime_untilframe_ms >= anim_step_width_ms) && (curcamPos == 1)) //new condition, only update when you enter the combat sc
 		{
 			totaltime_untilframe_ms = 0;
 			frame++;
 		}
-		if (frame > keyframe_length)  // Loop the animation if frames run out of bounds
+		if (frame > keyframe_length)  //Catch the end of the current animation
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
 			framezerocount++;
-			anim_num++;
-			if (anim_num > 1) {
-				anim_num = 0;
+			anim_num++; //go from animation 0 to 1
+
+			if (anim_num > 1) 
+			{
+				curcamPos = 0; //update the camera to move to the overhead scene
+				moveCameraScene(); //move the camera back after combat is over
+
+				anim_num = 0; //reset the animation loop for the next time combat begins, exception will be thrown if this line is not here
 			}
 
 		}
@@ -1655,9 +1652,10 @@ public:
 				if ( (board.characters[i].position == board.characters[j].position) && (board.characters[i].team != board.characters[j].team) )
 				   //( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
 				{
-					//issues with doing this multiple times, works on the first go
 					//add the zoom to game board then transition to battle scene instead of jump cuts
+					curcamPos = 1; //Set up the camera to move to the combat scene
 					moveCameraScene(); //make it so this function kicks off the battle scene animation
+					board.characters[i].position.x = board.characters[i].position.x - 1; //move a character so they are no longer overlapping with the enemy
 					cout << "GO TO BATTLE SCENE\n";
 				}
 			}
