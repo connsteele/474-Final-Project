@@ -1335,18 +1335,25 @@ public:
 
 		//Draw the new animated sprites based on Weapon class
 		//Vars for the loop
-		static float t_swrd = 0, t_spear = 0, t_axe = 0;
-		static vec2 offset1, offset2;
+		static float t_swrd = 0, t_spear = 0, t_axe = 0, t_magic = 0;
+		static vec2 offset1swrd, offset2swrd, offset1spear, offset2spear, offset1axe, offset2axe, offset1magic, offset2magic;
 		static int firstLoop = 0; //use to initialize the offsets once
 
 		float updateX = 1. / 5.;
 		float updateY = 1. / 7.;
 
-		//initialize
+		//initialize offsets for the sprites
 		if (firstLoop = 0)
 		{
-			offset1.x = 0; offset1.y = 0;
-			offset2.x = updateX; offset2.y = 0;
+			offset1swrd.x = 0; offset1swrd.y = 0;
+			offset2swrd.x = updateX; offset2swrd.y = 0;
+			offset1spear.x = 0; offset1spear.y = 0;
+			offset2spear.x = updateX; offset2spear.y = 0;
+			offset1axe.x = 0; offset1axe.y = 0;
+			offset2axe.x = updateX; offset2axe.y = 0;
+			offset1magic.x = 0; offset1magic.y = 0;
+			offset2magic.x = updateX; offset2magic.y = 0;
+
 			firstLoop += 1;
 		}
 		
@@ -1372,33 +1379,33 @@ public:
 				{
 					t_swrd = 0; //reset t
 					//update the 1st offset
-					offset1.x += updateX;
-					if (offset1.x >= 1.00)
+					offset1swrd.x += updateX;
+					if (offset1swrd.x >= 1.00)
 					{
-						offset1.x = 0;
-						offset1.y += updateY;
-						if (offset1.y >= 1.00)
+						offset1swrd.x = 0;
+						offset1swrd.y += updateY;
+						if (offset1swrd.y >= 1.00)
 						{
-							offset1.y = 0;
+							offset1swrd.y = 0;
 						}
 					}
 					//update the 2nd offset
-					offset2.x += updateX;
-					if (offset2.x >= 1.00)
+					offset2swrd.x += updateX;
+					if (offset2swrd.x >= 1.00)
 					{
-						offset2.x = 0;
-						offset2.y += updateY;
-						if (offset2.y >= 1.00)
+						offset2swrd.x = 0;
+						offset2swrd.y += updateY;
+						if (offset2swrd.y >= 1.00)
 						{
-							offset2.y = 0;
+							offset2swrd.y = 0;
 						}
 					}
 
 				}
 				//bind uniforms to the shader
 				glUniform1f(swordUnits->getUniform("t"), t_swrd);
-				glUniform2fv(swordUnits->getUniform("offset1"), 1, &offset1[0]);
-				glUniform2fv(swordUnits->getUniform("offset2"), 1, &offset2[0]);
+				glUniform2fv(swordUnits->getUniform("offset1"), 1, &offset1swrd[0]);
+				glUniform2fv(swordUnits->getUniform("offset2"), 1, &offset2swrd[0]);
 				glUniform1i(swordUnits->getUniform("team"), board.characters[i].team);
 
 				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
@@ -1428,33 +1435,33 @@ public:
 				{
 					t_spear = 0; //reset t
 					//update the 1st offset
-					offset1.x += updateX;  //WE PROBABLY NEED PER SHADER OFFSETS SO ONE FOR EACH SHADER/UNIT TYPE
-					if (offset1.x >= 1.00)
+					offset1spear.x += updateX;  //WE PROBABLY NEED PER SHADER UPDATES
+					if (offset1spear.x >= 1.00)
 					{
-						offset1.x = 0;
-						offset1.y += updateY;
-						if (offset1.y >= 1.00)
+						offset1spear.x = 0;
+						offset1spear.y += updateY;
+						if (offset1spear.y >= 1.00)
 						{
-							offset1.y = 0;
+							offset1spear.y = 0;
 						}
 					}
 					//update the 2nd offset
-					offset2.x += updateX;
-					if (offset2.x >= 1.00)
+					offset2spear.x += updateX;
+					if (offset2spear.x >= 1.00)
 					{
-						offset2.x = 0;
-						offset2.y += updateY;
-						if (offset2.y >= 1.00)
+						offset2spear.x = 0;
+						offset2spear.y += updateY;
+						if (offset2spear.y >= 1.00)
 						{
-							offset2.y = 0;
+							offset2spear.y = 0;
 						}
 					}
 
 				}
 				//bind uniforms to the shader
 				glUniform1f(spearUnits->getUniform("t"), t_spear);
-				glUniform2fv(spearUnits->getUniform("offset1"), 1, &offset1[0]);
-				glUniform2fv(spearUnits->getUniform("offset2"), 1, &offset2[0]);
+				glUniform2fv(spearUnits->getUniform("offset1"), 1, &offset1spear[0]);
+				glUniform2fv(spearUnits->getUniform("offset2"), 1, &offset2spear[0]);
 				glUniform1i(spearUnits->getUniform("team"), board.characters[i].team);
 
 				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
@@ -1482,33 +1489,33 @@ public:
 				{
 					t_axe = 0; //reset t
 					//update the 1st offset
-					offset1.x += updateX;  //WE PROBABLY NEED PER SHADER OFFSETS SO ONE FOR EACH SHADER/UNIT TYPE
-					if (offset1.x >= 1.00)
+					offset1axe.x += updateX;  //WE PROBABLY NEED PER SHADER UPDATES
+					if (offset1axe.x >= 1.00)
 					{
-						offset1.x = 0;
-						offset1.y += updateY;
-						if (offset1.y >= 1.00)
+						offset1axe.x = 0;
+						offset1axe.y += updateY;
+						if (offset1axe.y >= 1.00)
 						{
-							offset1.y = 0;
+							offset1axe.y = 0;
 						}
 					}
 					//update the 2nd offset
-					offset2.x += updateX;
-					if (offset2.x >= 1.00)
+					offset2axe.x += updateX;
+					if (offset2axe.x >= 1.00)
 					{
-						offset2.x = 0;
-						offset2.y += updateY;
-						if (offset2.y >= 1.00)
+						offset2axe.x = 0;
+						offset2axe.y += updateY;
+						if (offset2axe.y >= 1.00)
 						{
-							offset2.y = 0;
+							offset2axe.y = 0;
 						}
 					}
 
 				}
 				//bind uniforms to the shader
 				glUniform1f(axeUnits->getUniform("t"), t_axe);
-				glUniform2fv(axeUnits->getUniform("offset1"), 1, &offset1[0]);
-				glUniform2fv(axeUnits->getUniform("offset2"), 1, &offset2[0]);
+				glUniform2fv(axeUnits->getUniform("offset1"), 1, &offset1axe[0]);
+				glUniform2fv(axeUnits->getUniform("offset2"), 1, &offset2axe[0]);
 				glUniform1i(axeUnits->getUniform("team"), board.characters[i].team);
 
 				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
