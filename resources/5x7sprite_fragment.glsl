@@ -16,8 +16,10 @@ uniform vec2 offset2;
 //interpolation uniform
 uniform float t;
 
-//get team uniform for coloring the teams
+//get team uniform for coloring the teams, color active unit
 uniform int team;
+uniform int activeUnit;
+
 
 void main()
 {

@@ -15,6 +15,10 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "Shape.h"
 #include "Line.h"
 #include "bone.h"
+
+//text stuff
+
+
 using namespace std;
 using namespace glm;
 shared_ptr<Shape> shape;
@@ -27,6 +31,7 @@ static double moveCharY = 0;
 
 //current team
 static int activeTeam = 1;
+static int turnNumber;
 
 mat4 linint_between_two_orientations(vec3 ez_aka_lookto_1, vec3 ey_aka_up_1, vec3 ez_aka_lookto_2, vec3 ey_aka_up_2, float t);
 
@@ -451,6 +456,9 @@ public:
 			if (activeTeam == 1)
 			{
 				activeUnit = Nteam1.at(0);
+				//upload the current activeUnit to the shader, need to find an efficent way to do this
+				//glUniform1i(spearUnits->getUniform("activeUnit"), (*activeUnit).team);
+
 				//activeUnit = &board.characters[0];
 			}
 			else if (activeTeam == 2)
@@ -600,6 +608,11 @@ public:
 	all_animations all_animation;
 	void initGeom(const std::string& resourceDirectory)
 	{
+		//Game Logic Stuff///
+		activeTeam = 1;
+		turnNumber = 0; //
+
+		//// Geometery Stuff ////
         brick = make_shared<Shape>();
         brick->loadMesh(resourceDirectory + "/cube2.obj");
         brick->resize();
@@ -1060,6 +1073,7 @@ public:
 		swordUnits->addUniform("offset2");
 		swordUnits->addUniform("t");
 		swordUnits->addUniform("team");
+		swordUnits->addUniform("activeUnit");
 
 		//spear unit shader //
 		spearUnits = std::make_shared<Program>();
@@ -1082,6 +1096,7 @@ public:
 		spearUnits->addUniform("offset2");
 		spearUnits->addUniform("t");
 		spearUnits->addUniform("team");
+		spearUnits->addUniform("activeUnit");
 
 		//axe units shader
 		axeUnits = std::make_shared<Program>();
@@ -1104,6 +1119,7 @@ public:
 		axeUnits->addUniform("offset2");
 		axeUnits->addUniform("t");
 		axeUnits->addUniform("team");
+		axeUnits->addUniform("activeUnit");
 
 		//magic units shader
 		magicUnits = std::make_shared<Program>();
@@ -1126,6 +1142,7 @@ public:
 		magicUnits->addUniform("offset2");
 		magicUnits->addUniform("t");
 		magicUnits->addUniform("team");
+		magicUnits->addUniform("activeUnit");
 
 
 		// skybox shader //
@@ -1140,69 +1157,69 @@ public:
 		psky->addUniform("P");
 		psky->addUniform("V");
 		psky->addUniform("M");
-		psky->addUniform("campos");
-		psky->addAttribute("vertPos");
-		psky->addAttribute("vertNor");
-		psky->addAttribute("vertTex");
+psky->addUniform("campos");
+psky->addAttribute("vertPos");
+psky->addAttribute("vertNor");
+psky->addAttribute("vertTex");
 
-		//unused?
-		/*pplane = std::make_shared<Program>();
-		pplane->setVerbose(true);
-		pplane->setShaderNames(resourceDirectory + "/plane_vertex.glsl", resourceDirectory + "/plane_frag.glsl");
-		if (!pplane->init())
-			{
-			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
-			exit(1);
-			}
-		pplane->addUniform("P");
-		pplane->addUniform("V");
-		pplane->addUniform("M");
-		pplane->addUniform("campos");
-		pplane->addAttribute("vertPos");
-		pplane->addAttribute("vertNor");
-		pplane->addAttribute("vertTex");*/
+//unused?
+/*pplane = std::make_shared<Program>();
+pplane->setVerbose(true);
+pplane->setShaderNames(resourceDirectory + "/plane_vertex.glsl", resourceDirectory + "/plane_frag.glsl");
+if (!pplane->init())
+	{
+	std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+	exit(1);
+	}
+pplane->addUniform("P");
+pplane->addUniform("V");
+pplane->addUniform("M");
+pplane->addUniform("campos");
+pplane->addAttribute("vertPos");
+pplane->addAttribute("vertNor");
+pplane->addAttribute("vertTex");*/
 
-		//Terrain Shader
-        bricks = std::make_shared<Program>();
-        bricks->setVerbose(true);
-        bricks->setShaderNames(resourceDirectory + "/brick_vertex.glsl", resourceDirectory + "/brick_fragment.glsl");
-        bricks->init();
-        bricks->addUniform("P");
-        bricks->addUniform("V");
-        bricks->addUniform("M");
-        bricks->addUniform("camPos");
-        bricks->addAttribute("vertPos");
-        bricks->addAttribute("vertNor");
-        bricks->addAttribute("vertTex");
+//Terrain Shader
+bricks = std::make_shared<Program>();
+bricks->setVerbose(true);
+bricks->setShaderNames(resourceDirectory + "/brick_vertex.glsl", resourceDirectory + "/brick_fragment.glsl");
+bricks->init();
+bricks->addUniform("P");
+bricks->addUniform("V");
+bricks->addUniform("M");
+bricks->addUniform("camPos");
+bricks->addAttribute("vertPos");
+bricks->addAttribute("vertNor");
+bricks->addAttribute("vertTex");
 
-		//Repurposed for background textures and animated elements such as damage sprites or moving background elements
-        billboards = std::make_shared<Program>();
-        billboards->setVerbose(true);
-        billboards->setShaderNames(resourceDirectory + "/vert_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
-        if (!billboards->init())
-        {
-            std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
-            exit(1);
-        }
-        billboards->addUniform("P");
-        billboards->addUniform("V");
-        billboards->addUniform("M");
-        billboards->addUniform("campos");
-        billboards->addAttribute("vertPos");
-        billboards->addAttribute("vertNor");
-        billboards->addAttribute("vertTex");
+//Repurposed for background textures and animated elements such as damage sprites or moving background elements
+billboards = std::make_shared<Program>();
+billboards->setVerbose(true);
+billboards->setShaderNames(resourceDirectory + "/vert_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
+if (!billboards->init())
+{
+	std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+	exit(1);
+}
+billboards->addUniform("P");
+billboards->addUniform("V");
+billboards->addUniform("M");
+billboards->addUniform("campos");
+billboards->addAttribute("vertPos");
+billboards->addAttribute("vertNor");
+billboards->addAttribute("vertTex");
 	}
 
 	double overheadZoomLevel = 0;
 	void zoomCamera() //Pressing T will set a boolean so this gets called in the render function
 	{
-		
+
 		if (curcamPos == 0) //only do zoom when in the overhead pos
-		{ 
+		{
 			overheadZoomLevel += .1;
-			if ( overheadZoomLevel < 5 )
+			if (overheadZoomLevel < 5)
 			{
-				mycam.pos = glm::vec3(-0.75, -10, -9) + vec3(0, overheadZoomLevel, overheadZoomLevel/2);
+				mycam.pos = glm::vec3(-0.75, -10, -9) + vec3(0, overheadZoomLevel, overheadZoomLevel / 2);
 				//send something to the shader to make the scene darker
 			}
 			else
@@ -1211,7 +1228,7 @@ public:
 			}
 			mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
 			mycam.rot.y = 0;
-			
+
 		}
 
 	}
@@ -1237,6 +1254,19 @@ public:
 		}
 	}
 
+	void updateTurn() //function that continously checks if all the 
+	{
+		if (activeTeam == 1) //check if you want to end team 1's turn
+		{
+			//check if the sum characters movements have been exhausted, sum the characters movements and check if the sum == 0;
+		}
+		else if (activeTeam == 2) //check if you want to end team 2's turn
+		{
+
+		}
+
+	}
+
 	/****DRAW
 	This is the most important function in your program - this is where you
 	will actually issue the commands to draw any geometry you have set up to
@@ -1244,6 +1274,11 @@ public:
 	********/
 	void render()
 	{
+		//Game Logic Stuff//
+		//need a way to check if the turn should be changed, if all the movements on a team have been exhausted or if the player chooses to end the turn
+
+
+		//Graphics Stuff
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		double frametime = get_last_elapsed_time();
@@ -1303,7 +1338,7 @@ public:
 		int width, height;
 		glfwGetFramebufferSize(windowManager->getHandle(), &width, &height);
 		float aspect = width/(float)height;
-		glViewport(0, 0, width, height);
+		glViewport(0, 0, width, height); //use the entire window
 
 		// Clear framebuffer.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1321,6 +1356,9 @@ public:
 		// ...but we overwrite it (optional) with a perspective projection.
 		P = glm::perspective((float)(3.14159 / 4.), (float)((float)width/ (float)height), 0.1f, 1000.0f); //so much type casting... GLM metods are quite funny ones
 		
+		//// HUD Elements ////
+		
+
 		//Zoom the camera if T is pressed
 		if (zoomCam == TRUE )
 		{
