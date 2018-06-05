@@ -32,6 +32,7 @@ static double moveCharY = 0;
 //current team
 static int activeTeam = 1;
 static int turnNumber;
+static int teamEndTurn;//check if you want to end the turn, 1 for true end turn, 0 for false
 
 mat4 linint_between_two_orientations(vec3 ez_aka_lookto_1, vec3 ey_aka_up_1, vec3 ez_aka_lookto_2, vec3 ey_aka_up_2, float t);
 
@@ -448,7 +449,7 @@ public:
 		if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
 		{
 
-			activeUnit[0].position.x += 1;
+			activeUnit[0].position.x += 1; //throwing error when no unit is selected by default 
 		}
 		//Active Unit Selection
 		if (key == GLFW_KEY_1 && action == GLFW_PRESS)
@@ -504,6 +505,15 @@ public:
 			{
 				activeUnit = Nteam2.at(3);
 				//activeUnit = &board.characters[3 + 4];
+			}
+		}
+		//end current team's turn
+		if (key == GLFW_KEY_M && action == GLFW_PRESS) //update the global so the turn is changed
+		{
+			
+			if (teamEndTurn == 0)
+			{
+				teamEndTurn = 1; //turn the boolean int to true
 			}
 		}
 		//switch teams
@@ -611,6 +621,7 @@ public:
 		//Game Logic Stuff///
 		activeTeam = 1;
 		turnNumber = 0; //
+		teamEndTurn = 0; //set the initial turn not to end
 
 		//// Geometery Stuff ////
         brick = make_shared<Shape>();
@@ -1259,11 +1270,25 @@ billboards->addAttribute("vertTex");
 		if (activeTeam == 1) //check if you want to end team 1's turn
 		{
 			//check if the sum characters movements have been exhausted, sum the characters movements and check if the sum == 0;
+			//also check if the player has hit the end turn button
+			if (teamEndTurn == 1) //check to see if the player has pressed the end turn keys
+			{
+				teamEndTurn = 0;
+				activeTeam = 2;
+				activeUnit = Nteam2.at(0); //change the active unit
+			}
 		}
 		else if (activeTeam == 2) //check if you want to end team 2's turn
 		{
-
+			//check if the sum characters movements have been exhausted, sum the characters movements and check if the sum == 0;
+			if (teamEndTurn == 1) //check to see if the player has pressed the end turn keys
+			{
+				teamEndTurn = 0;
+				activeTeam = 1;
+				activeUnit = Nteam1.at(0); //change the active unit
+			}
 		}
+
 
 	}
 
@@ -1275,6 +1300,7 @@ billboards->addAttribute("vertTex");
 	void render()
 	{
 		//Game Logic Stuff//
+		updateTurn(); //function to check if the turn should be changed
 		//need a way to check if the turn should be changed, if all the movements on a team have been exhausted or if the player chooses to end the turn
 
 
@@ -1528,9 +1554,12 @@ billboards->addAttribute("vertTex");
 		float updateX = 1. / 5.;
 		float updateY = 1. / 7.;
 
-		//initialize offsets for the sprites
+		//Things to setup on the first loop of render
 		if (firstLoop = 0)
 		{
+			activeUnit = Nteam1.at(0); //set the iniatial unit to the sword unit on team 1, this isnt 
+
+			//offsets 
 			offset1swrd.x = 0; offset1swrd.y = 0;
 			offset2swrd.x = updateX; offset2swrd.y = 0;
 			offset1spear.x = 0; offset1spear.y = 0;
