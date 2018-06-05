@@ -25,6 +25,9 @@ shared_ptr<Shape> brick;
 static double moveCharX = 0;
 static double moveCharY = 0;
 
+//current team
+static int activeTeam = 1;
+
 mat4 linint_between_two_orientations(vec3 ez_aka_lookto_1, vec3 ey_aka_up_1, vec3 ez_aka_lookto_2, vec3 ey_aka_up_2, float t);
 
 
@@ -227,6 +230,8 @@ public:
     int getBoardHeight();
     
 };
+Character* activeUnit; //current selected unit, global
+vector<Character *> Nteam1, Nteam2;
 
 // Constructors
 Board::Board() {}
@@ -421,30 +426,90 @@ public:
 		{
 			mycam.d = 0;
 		}
-		//temp move char, moveCharX
+		//Active Unit Movement
 		if (key == GLFW_KEY_UP && action == GLFW_RELEASE)
 		{
 			// only move charaters if they are isCharacter = 1 otherwise regard them as gameplay erased from gameboard
-			board.characters[0].position.z -= 1; //only move the first char
-			//board.characters[1].position.z -= 1;
+			activeUnit[0].position.z -= 1;
 		}
 		if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE)
 		{
-			board.characters[0].position.z += 1; //only move the first char
-			//board.characters[1].position.z += 1;
+			activeUnit[0].position.z += 1;
 		}
 		if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
 		{
-			board.characters[0].position.x -= 1; //only move the first char
-			//board.characters[1].position.x -= 1;
+			activeUnit[0].position.x -= 1; //only move the first char
 		}
 		if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
 		{
 
-			board.characters[0].position.x += 1; //only move the first char
-			//board.characters[1].position.x += 1;
+			activeUnit[0].position.x += 1;
 		}
-
+		//Active Unit Selection
+		if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+		{
+			if (activeTeam == 1)
+			{
+				activeUnit = Nteam1.at(0);
+				//activeUnit = &board.characters[0];
+			}
+			else if (activeTeam == 2)
+			{
+				activeUnit = Nteam2.at(0);
+				//activeUnit = &board.characters[0+4];
+			}
+		}
+		if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+		{
+			if (activeTeam == 1)
+			{
+				activeUnit = Nteam1.at(1);
+				//activeUnit = &board.characters[1];
+			}
+			else if (activeTeam == 2)
+			{
+				activeUnit = Nteam2.at(1);
+				//activeUnit = &board.characters[1 + 4];
+			}
+		}
+		if (key == GLFW_KEY_3 && action == GLFW_PRESS)
+		{
+			if (activeTeam == 1)
+			{
+				activeUnit = Nteam1.at(2);
+				//activeUnit = &board.characters[2];
+			}
+			else if (activeTeam == 2)
+			{
+				activeUnit = Nteam2.at(2);
+				//activeUnit = &board.characters[2 + 4];
+			}
+		}
+		if (key == GLFW_KEY_4 && action == GLFW_PRESS)
+		{
+			if (activeTeam == 1)
+			{
+				activeUnit = Nteam1.at(3);
+				//activeUnit = &board.characters[3];
+			}
+			else if (activeTeam == 2)
+			{
+				activeUnit = Nteam2.at(3);
+				//activeUnit = &board.characters[3 + 4];
+			}
+		}
+		//switch teams
+		if (key == GLFW_KEY_L && action == GLFW_PRESS)
+		{
+			if (activeTeam == 1)
+			{
+				activeTeam = 2;
+			}
+			else if (activeTeam == 2)
+			{
+				activeTeam = 1;
+			}
+		}
 		
 		if (key == GLFW_KEY_R && action == GLFW_PRESS)  // switch the camera position
 		{
@@ -904,6 +969,7 @@ public:
 		charPos.at(0).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 1);
 		charPos.at(0).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 1);
 		charPos.at(0).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 1);
+
 		//Team 2
 		charPos.at(6).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 2);
 		charPos.at(6).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 2);
@@ -923,13 +989,22 @@ public:
 		//charPos.at(6).at(1) = Character("Marth", default, axe, false, 25, TexMarth, 2); //test char4
 
         // send to board
-        board = Board(mapBlocks, team1, team2, charPos, mapWidth, mapHeight);
-        
+        board = Board(mapBlocks, team1, team2, charPos, mapWidth, mapHeight);        
 
         //cout << "CONVERT CHAR TO PHYSICAL COORDINATES\n";
         // call this to convert to map coordinates
         board.convertCharToPhysicalCoordinates();
-        
+
+		////Send to teams for active unit selection, doing this doesnt do anything ;(
+		Nteam1.push_back(&board.characters[0]);
+		Nteam1.push_back(&board.characters[1]);
+		Nteam1.push_back(&board.characters[2]);
+		Nteam1.push_back(&board.characters[3]);
+		Nteam2.push_back(&board.characters[4]);
+		Nteam2.push_back(&board.characters[5]);
+		Nteam2.push_back(&board.characters[6]);
+		Nteam2.push_back(&board.characters[7]);
+
 	}
 
 	//General OGL initialization - set OGL state here
@@ -939,6 +1014,8 @@ public:
 
 		// Set background color.
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+		
 		// Enable z-buffer test.
 		glEnable(GL_DEPTH_TEST);
 		//glDisable(GL_DEPTH_TEST);
