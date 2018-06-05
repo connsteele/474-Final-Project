@@ -1310,11 +1310,38 @@ billboards->addAttribute("vertTex");
 				teamEndTurn = 0;
 				activeTeam = 2;
 				activeUnit = Nteam2.at(0); //change the active unit
+
+				//reset the moves for all the new current team's units
+				for (int ii = 0; ii < Nteam2.size(); ii++)
+				{
+					if ( (Nteam2.at(ii)[0]).weaponclass != magic)
+					{
+						(Nteam2.at(ii)[0]).moves = 3; //reset unit movements
+					}
+					else if ((Nteam2.at(ii)[0]).weaponclass == magic)
+					{
+						(Nteam2.at(ii)[0]).moves = 2; //reset unit movements
+					}
+				}
+
 			}
 			else if (teamSumMoves <= 0) // check if the sum of movements on this team is 0
 			{
 				activeTeam = 2;
 				activeUnit = Nteam2.at(0); //change the active unit
+
+				//reset the moves for all the new current team's units
+				for (int ii = 0; ii < Nteam2.size(); ii++)
+				{
+					if ((Nteam2.at(ii)[0]).weaponclass != magic)
+					{
+						(Nteam2.at(ii)[0]).moves = 3; //reset unit movements
+					}
+					else if ((Nteam2.at(ii)[0]).weaponclass == magic)
+					{
+						(Nteam2.at(ii)[0]).moves = 2; //reset unit movements
+					}
+				}
 			}
 		}
 		else if (activeTeam == 2) //check if you want to end team 2's turn
@@ -1326,12 +1353,39 @@ billboards->addAttribute("vertTex");
 				teamEndTurn = 0;
 				activeTeam = 1;
 				activeUnit = Nteam1.at(0); //change the active unit
+
+				//reset the moves for all the new current team's units
+				for (int ii = 0; ii < Nteam2.size(); ii++)
+				{
+					if ((Nteam1.at(ii)[0]).weaponclass != magic)
+					{
+						(Nteam1.at(ii)[0]).moves = 3; //reset unit movements
+					}
+					else if ((Nteam1.at(ii)[0]).weaponclass == magic)
+					{
+						(Nteam1.at(ii)[0]).moves = 2; //reset unit movements
+					}
+				}
 			}
 			else if (teamSumMoves <= 0) // check if the sum of movements on this team is 0 
 			{
 				activeTeam = 1;
 				activeUnit = Nteam1.at(0); //change the active unit
+
+				//reset the moves for all the new current team's units
+				for (int ii = 0; ii < Nteam2.size(); ii++)
+				{
+					if ((Nteam1.at(ii)[0]).weaponclass != magic)
+					{
+						(Nteam1.at(ii)[0]).moves = 3; //reset unit movements
+					}
+					else if ((Nteam1.at(ii)[0]).weaponclass == magic)
+					{
+						(Nteam1.at(ii)[0]).moves = 2; //reset unit movements
+					}
+				}
 			}
+
 		}
 
 
