@@ -202,6 +202,9 @@ Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shiel
 class Team {
 public:
     int colour; // 1 for team 1, 2 for team 2
+    int turnNumber;
+    int teamEndTurn; //check if you want to end the turn, 1 for true end turn, 0 for false
+    int teamSumMoves;
 
     vector<Character> characters;
     
