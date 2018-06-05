@@ -18,6 +18,11 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 
 //text stuff
 
+#define RUN_ANIMATION 0
+#define AXE_SWING_ANIMATION 1
+#define AXE_UNSHEATHE_ANIMATION 2
+#define DODGE_ANIMATION 3
+
 
 using namespace std;
 using namespace glm;
@@ -634,7 +639,10 @@ public:
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
 		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root); //82 frames
-		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);  //92 frames
+		//readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);  //92 frames
+		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, &root);  
+		//readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, &root);  
+		
 		root->set_animations(&all_animation,animmat,animmatsize);
 
 		cout << "root name " << root->name << endl;
@@ -1352,14 +1360,21 @@ billboards->addAttribute("vertTex");
 
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
-		root->myplayanimation(frame, 0, 1, play_anim_t);
+		root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
+		if (anim_num == AXE_SWING_ANIMATION && play_anim_t < 1) {
+			play_anim_t += frametime;
+		}
+		else if (anim_num == RUN_ANIMATION && play_anim_t > 0) {
+			play_anim_t -= frametime;
+		}
+		/*root->myplayanimation(frame, AXE_SWING_ANIMATION, DODGE_ANIMATION, play_anim_t);
 		if (anim_num == 1 && play_anim_t < 1) {
 			play_anim_t += frametime;
 		}
 		else if (anim_num == 0 && play_anim_t > 0) {
 			play_anim_t -= frametime;
-		}
-		
+		}*/
+
 		// Get current frame buffer size.
 		int width, height;
 		glfwGetFramebufferSize(windowManager->getHandle(), &width, &height);
