@@ -363,12 +363,12 @@ public:
 		
 		if (key == GLFW_KEY_R && action == GLFW_PRESS)  // switch the camera position
 		{
-			curcamPos == 0;
+			curcamPos = 0;
 			moveCameraScene();
 		}
 		if (key == GLFW_KEY_F && action == GLFW_PRESS)  // switch the camera position
 		{
-			curcamPos == 1;
+			curcamPos = 1;
 			moveCameraScene();
 		}
 		if (key == GLFW_KEY_T && action == GLFW_RELEASE)
