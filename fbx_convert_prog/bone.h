@@ -82,6 +82,7 @@ public:
 			int frameb = fframe + 1;
 			float t = fframe - (int)fframe;
 			int mysize = animation[animationnum]->keyframes.size() - 1;
+			int framezerocount = 0;
 
 			quat qa = animation[animationnum]->keyframes[framea * ratio].quaternion;
 			quat qb = animation[animationnum]->keyframes[frameb * ratio].quaternion;
@@ -103,7 +104,10 @@ public:
 			vec3 tf = mix(tr, te, f);
 
 	
-			if (f >= 0.000) {
+			if (fframe == 0) {
+				framezerocount++;
+			}
+			if (f >= 0.000001) {
 				tf = animation[animationnum]->keyframes[mysize].translation;
 			}
 

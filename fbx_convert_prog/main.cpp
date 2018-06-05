@@ -1402,13 +1402,7 @@ billboards->addAttribute("vertTex");
 		else if (anim_num == RUN_ANIMATION && play_anim_t > 0) {
 			play_anim_t -= frametime;
 		}
-		/*root->myplayanimation(frame, AXE_SWING_ANIMATION, DODGE_ANIMATION, play_anim_t);
-		if (anim_num == 1 && play_anim_t < 1) {
-			play_anim_t += frametime;
-		}
-		else if (anim_num == 0 && play_anim_t > 0) {
-			play_anim_t -= frametime;
-		}*/
+	
 
 		// Get current frame buffer size.
 		int width, height;
