@@ -680,8 +680,9 @@ public:
 		cout << "root name " << root->name << endl;
 
 		// Initialize the Camera Position and orientation
-		mycam.pos = glm::vec3(-0.75, -10, -9); //Set initial Cam pos cented above the map plane
-		mycam.rot.x = 1; //rotate the camera to look down at the map plane
+		moveCameraScene();
+		//mycam.pos = glm::vec3(-0.75, -10, -9); //Set initial Cam pos cented above the map plane
+		//mycam.rot.x = 1; //rotate the camera to look down at the map plane
 		
 			
 		// Initialize mesh.
@@ -1291,7 +1292,8 @@ billboards->addAttribute("vertTex");
 		if (curcamPos == 0)
 		{
 			//overhead orientation
-			mycam.pos = glm::vec3(-0.75, -10, -9);
+			//mycam.pos = glm::vec3(-0.75, -10, -9);
+			mycam.pos = glm::vec3(-0.75, -8.5, -8);
 			mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
 			mycam.rot.y = 0;
 			//curcamPos = 1; //switch for next press
