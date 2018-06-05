@@ -196,6 +196,14 @@ Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shiel
 	team = charTeam;
 }
 
+class Team {
+public:
+    int colour; // 1 for team 1, 2 for team 2
+
+    vector<Character> characters;
+    
+};
+
 class Board {
 public:
     // Board properties
@@ -211,6 +219,7 @@ public:
     vector<vector<Character>> team1Pos;
     vector<vector<Character>> team2Pos;
     vector<vector<Character>> allCharPos;
+
 	//variables to update the character positions
 	static double moveCharX ;
 	static double moveCharY ;
