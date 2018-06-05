@@ -103,7 +103,7 @@ public:
 			vec3 tf = mix(tr, te, f);
 
 	
-			if (f >= 0.000) {
+			if (f >= 0.000001) {
 				tf = animation[animationnum]->keyframes[mysize].translation;
 			}
 
