@@ -33,6 +33,7 @@ static double moveCharY = 0;
 static int activeTeam = 1;
 static int turnNumber;
 static int teamEndTurn;//check if you want to end the turn, 1 for true end turn, 0 for false
+static int teamSumMoves;
 
 mat4 linint_between_two_orientations(vec3 ez_aka_lookto_1, vec3 ey_aka_up_1, vec3 ez_aka_lookto_2, vec3 ey_aka_up_2, float t);
 
@@ -177,15 +178,16 @@ public:
     int isCharacter = 0; // is 1 when character actually exists
     GLuint texture;
 	int team; //1 for Red Team, 2 for Blue Team
+	int moves;
     // constructors
     Character();
-    Character(string name, vec3 position, weapon weaponclass, bool hasShield, int health, GLuint charTex, int charTeam);
+    Character(string name, vec3 position, weapon weaponclass, bool hasShield, int health, GLuint charTex, int charTeam, int numMoves);
 };
 
 Character::Character() {
     isCharacter = 0;
 }
-Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shield, int charHealth, GLuint charTex, int charTeam) {
+Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shield, int charHealth, GLuint charTex, int charTeam, int numMoves) {
     position = charPos;
     weaponclass = curWeapon;
     hasShield = shield;
@@ -194,6 +196,7 @@ Character::Character(string charName, vec3 charPos, weapon curWeapon, bool shiel
     isCharacter = 1;
     texture = charTex;
 	team = charTeam;
+	moves = numMoves;
 }
 
 class Board {
@@ -433,23 +436,40 @@ public:
 			mycam.d = 0;
 		}
 		//Active Unit Movement
-		if (key == GLFW_KEY_UP && action == GLFW_RELEASE)
+		if (key == GLFW_KEY_UP && action == GLFW_PRESS)
 		{
 			// only move charaters if they are isCharacter = 1 otherwise regard them as gameplay erased from gameboard
-			activeUnit[0].position.z -= 1;
-		}
-		if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE)
-		{
-			activeUnit[0].position.z += 1;
-		}
-		if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
-		{
-			activeUnit[0].position.x -= 1; //only move the first char
-		}
-		if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
-		{
+			if (activeUnit[0].moves > 0)
+			{
+				activeUnit[0].moves -= 1;
+				activeUnit[0].position.z -= 1;
+			}
+			//activeUnit[0].position.z -= 1;
 
-			activeUnit[0].position.x += 1; //throwing error when no unit is selected by default 
+		}
+		if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
+		{	
+			if (activeUnit[0].moves > 0)
+			{
+				activeUnit[0].moves -= 1;
+				activeUnit[0].position.z += 1;
+			}
+		}
+		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
+		{
+			if (activeUnit[0].moves > 0)
+			{
+				activeUnit[0].moves -= 1;
+				activeUnit[0].position.x -= 1;
+			}
+		}
+		if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+		{
+			if (activeUnit[0].moves > 0)
+			{
+				activeUnit[0].moves -= 1;
+				activeUnit[0].position.x += 1; 
+			}
 		}
 		//Active Unit Selection
 		if (key == GLFW_KEY_1 && action == GLFW_PRESS)
@@ -987,18 +1007,20 @@ public:
         // team 1 test chars
         weapon curweapon = sword;
         vec3 default = vec3(0, 0, 0);
+		//
+		teamSumMoves = 100000; // just set this initial value so it doesnt switch turns on the first render loop, it gets recomputed on each render loop
 		//NEW UNITS
 		//Team 1
-		charPos.at(0).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 1);
-		charPos.at(0).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 1);
-		charPos.at(0).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 1);
-		charPos.at(0).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 1);
+		charPos.at(0).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 1, 3);
+		charPos.at(0).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 1, 3);
+		charPos.at(0).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 1, 3);
+		charPos.at(0).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 1, 2);
 
 		//Team 2
-		charPos.at(6).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 2);
-		charPos.at(6).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 2);
-		charPos.at(6).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 2);
-		charPos.at(6).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 2);
+		charPos.at(6).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 2, 3);
+		charPos.at(6).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 2, 3);
+		charPos.at(6).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 2, 3);
+		charPos.at(6).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 2, 2);
 
 		////OLD TEMP UNITS
   //      charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture, 1);  // load the character spite textures
@@ -1266,24 +1288,35 @@ billboards->addAttribute("vertTex");
 	}
 
 	void updateTurn() //function that continously checks if all the 
-	{
+	{	
 		if (activeTeam == 1) //check if you want to end team 1's turn
 		{
+			cout << "team 1 moves left: " << teamSumMoves << endl;
 			//check if the sum characters movements have been exhausted, sum the characters movements and check if the sum == 0;
-			//also check if the player has hit the end turn button
 			if (teamEndTurn == 1) //check to see if the player has pressed the end turn keys
 			{
 				teamEndTurn = 0;
 				activeTeam = 2;
 				activeUnit = Nteam2.at(0); //change the active unit
 			}
+			else if (teamSumMoves <= 0) // check if the sum of movements on this team is 0
+			{
+				activeTeam = 2;
+				activeUnit = Nteam2.at(0); //change the active unit
+			}
 		}
 		else if (activeTeam == 2) //check if you want to end team 2's turn
 		{
+			cout << "team 2 moves left: " << teamSumMoves << endl;
 			//check if the sum characters movements have been exhausted, sum the characters movements and check if the sum == 0;
 			if (teamEndTurn == 1) //check to see if the player has pressed the end turn keys
 			{
 				teamEndTurn = 0;
+				activeTeam = 1;
+				activeUnit = Nteam1.at(0); //change the active unit
+			}
+			else if (teamSumMoves <= 0) // check if the sum of movements on this team is 0 
+			{
 				activeTeam = 1;
 				activeUnit = Nteam1.at(0); //change the active unit
 			}
@@ -1301,6 +1334,8 @@ billboards->addAttribute("vertTex");
 	{
 		//Game Logic Stuff//
 		updateTurn(); //function to check if the turn should be changed
+
+
 		//need a way to check if the turn should be changed, if all the movements on a team have been exhausted or if the player chooses to end the turn
 
 
@@ -1555,9 +1590,9 @@ billboards->addAttribute("vertTex");
 		float updateY = 1. / 7.;
 
 		//Things to setup on the first loop of render
-		if (firstLoop = 0)
+		if (firstLoop == 0)
 		{
-			activeUnit = Nteam1.at(0); //set the iniatial unit to the sword unit on team 1, this isnt 
+			activeUnit = Nteam1.at(0); //set the iniatial unit to the sword unit on team 1, this isnt
 
 			//offsets 
 			offset1swrd.x = 0; offset1swrd.y = 0;
@@ -1572,7 +1607,7 @@ billboards->addAttribute("vertTex");
 			firstLoop += 1;
 		}
 		
-
+		teamSumMoves = 0; //recompute the total number of moves on the team
 		for (int i = 0; i < board.characters.size(); i++) //Check every character on the game board
 		{
 			//cout << i << "\n";
@@ -1629,8 +1664,13 @@ billboards->addAttribute("vertTex");
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(swordUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
-
 				swordUnits->unbind();
+
+				//Game Logic Stuff
+				if (activeTeam == board.characters[i].team) // add the sword units moveme
+				{
+					teamSumMoves += board.characters[i].moves;
+				}
 			}
 			if (board.characters[i].weaponclass == spear) //Draw Spear Units to the board
 			{
@@ -1684,6 +1724,15 @@ billboards->addAttribute("vertTex");
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(spearUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
+				spearUnits->unbind();
+
+				//Game Logic Stuff
+				if (activeTeam == board.characters[i].team) // add the spear units moveme
+				{
+					teamSumMoves += board.characters[i].moves;
+				}
+
 			}
 			if (board.characters[i].weaponclass == axe)
 			{
@@ -1738,6 +1787,13 @@ billboards->addAttribute("vertTex");
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(axeUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+				axeUnits->unbind();
+
+				//Game Logic Stuff
+				if (activeTeam == board.characters[i].team) // add the axe units moveme
+				{
+					teamSumMoves += board.characters[i].moves;
+				}
 			}
 			if (board.characters[i].weaponclass == magic)
 			{
@@ -1792,6 +1848,13 @@ billboards->addAttribute("vertTex");
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(magicUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+				magicUnits->bind();
+
+				//Game Logic Stuff
+				if (activeTeam == board.characters[i].team) // add the sword units moveme
+				{
+					teamSumMoves += board.characters[i].moves;
+				}
 			}
 
 			//Check to see if any characters are overlapping, theres probably a more efficent way to do this
