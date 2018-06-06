@@ -17,6 +17,8 @@
 using namespace std;
 using namespace glm;
 
+//need to implement in the main
+
 class Team {
 public:
     int colour; // 1 for team 1, 2 for team 2
