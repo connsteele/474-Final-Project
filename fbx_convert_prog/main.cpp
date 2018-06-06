@@ -1198,7 +1198,8 @@ billboards->addAttribute("vertTex");
 
 	void bindActiveUnit(int i, std::shared_ptr<Program> prog)
 	{
-		if ((activeUnit[0].name == board.characters.at(i).name) && (activeUnit[0].team == board.characters.at(i).team)) //send a uniform to the shader indicating if the unit is selected and should be highlighted
+		if ( (activeUnit[0].name == board.characters.at(i).name) && ((activeUnit[0].team) != (board.characters.at(i).team))) //send a uniform to the shader indicating if the unit is selected and should be highlighted
+		//THIS IF IS REALLY STRANGE != has to be used bc if == is used it colors the wrong unit as the active unit
 		{
 			glUniform1i(prog->getUniform("activeUnit"), 1); //true, highlight
 			cout << "activeUnit team: " << activeUnit[0].team << endl;

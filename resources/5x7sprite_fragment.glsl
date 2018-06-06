@@ -50,7 +50,7 @@ void main()
 	//update color if active unit
 	if (activeUnit == 1)
 	{
-		color *= vec4(1.75, 1.75, 1.75, 1);
+		color *= vec4(1.7, 1.7, 1.7, 1);
 		color = clamp(color, 0, 1); //clamp the colors so they render correctly
 	}
 
