@@ -1442,7 +1442,7 @@ billboards->addAttribute("vertTex");
             newPos.x *= -1;
             newPos.z *= -1;
             TransBones = glm::translate(glm::mat4(1.0f), newPos);
-            mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0.25, -1, 0.25));
+            mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0.25, -0.005, 0.25));
             M = TransPos * TransBones * S;
             glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
             brick->draw(bricks, FALSE);
@@ -1453,6 +1453,7 @@ billboards->addAttribute("vertTex");
 
 
 		//Draw the new animated sprites based on Weapon class
+
 		//Vars for the loop
 		static float t_swrd = 0, t_spear = 0, t_axe = 0, t_magic = 0;
 		static vec2 offset1swrd, offset2swrd, offset1spear, offset2spear, offset1axe, offset2axe, offset1magic, offset2magic;
@@ -1482,7 +1483,14 @@ billboards->addAttribute("vertTex");
 		teamSumMoves = 0; //recompute the total number of moves on the team
 		for (int i = 0; i < board.characters.size(); i++) //Check every character on the game board
 		{
-			//cout << i << "\n";
+			glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0)); //draw all the sprites
+			//Game Logic Stuff
+			//Add to the sum of the teams movement
+			if (activeTeam == board.characters[i].team)
+			{
+				teamSumMoves += board.characters[i].moves;
+			}
+			//draw each weapon class
 			if (board.characters[i].weaponclass == sword) //draw sword units to the board
 			{
 				swordUnits->bind();
@@ -1530,19 +1538,13 @@ billboards->addAttribute("vertTex");
 				glUniform2fv(swordUnits->getUniform("offset2"), 1, &offset2swrd[0]);
 				glUniform1i(swordUnits->getUniform("team"), board.characters[i].team);
 
-				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
+				//glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0));
 				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(swordUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 				swordUnits->unbind();
-
-				//Game Logic Stuff
-				if (activeTeam == board.characters[i].team) // add the sword units moveme
-				{
-					teamSumMoves += board.characters[i].moves;
-				}
 			}
 			if (board.characters[i].weaponclass == spear) //Draw Spear Units to the board
 			{
@@ -1590,7 +1592,7 @@ billboards->addAttribute("vertTex");
 				glUniform2fv(spearUnits->getUniform("offset2"), 1, &offset2spear[0]);
 				glUniform1i(spearUnits->getUniform("team"), board.characters[i].team);
 
-				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
+				//glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
 				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
@@ -1598,12 +1600,6 @@ billboards->addAttribute("vertTex");
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 
 				spearUnits->unbind();
-
-				//Game Logic Stuff
-				if (activeTeam == board.characters[i].team) // add the spear units moveme
-				{
-					teamSumMoves += board.characters[i].moves;
-				}
 
 			}
 			if (board.characters[i].weaponclass == axe)
@@ -1653,7 +1649,7 @@ billboards->addAttribute("vertTex");
 				glUniform2fv(axeUnits->getUniform("offset2"), 1, &offset2axe[0]);
 				glUniform1i(axeUnits->getUniform("team"), board.characters[i].team);
 
-				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
+				//glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0.)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
 				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
@@ -1661,11 +1657,6 @@ billboards->addAttribute("vertTex");
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 				axeUnits->unbind();
 
-				//Game Logic Stuff
-				if (activeTeam == board.characters[i].team) // add the axe units moveme
-				{
-					teamSumMoves += board.characters[i].moves;
-				}
 			}
 			if (board.characters[i].weaponclass == magic)
 			{
@@ -1714,7 +1705,7 @@ billboards->addAttribute("vertTex");
 				glUniform2fv(magicUnits->getUniform("offset2"), 1, &offset2magic[0]);
 				glUniform1i(magicUnits->getUniform("team"), board.characters[i].team);
 
-				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
+				//glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
 				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
@@ -1722,11 +1713,6 @@ billboards->addAttribute("vertTex");
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 				magicUnits->bind();
 
-				//Game Logic Stuff
-				if (activeTeam == board.characters[i].team) // add the sword units moveme
-				{
-					teamSumMoves += board.characters[i].moves;
-				}
 			}
 
 			//Check to see if any characters are overlapping, theres probably a more efficent way to do this
