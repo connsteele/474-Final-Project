@@ -38,7 +38,7 @@ static double moveCharX = 0;
 static double moveCharY = 0;
 
 //current team
-static int activeTeam = 1;
+static int activeTeam;
 static int turnNumber;
 static int teamEndTurn;//check if you want to end the turn, 1 for true end turn, 0 for false
 static int teamSumMoves;
@@ -170,7 +170,7 @@ public:
 
 camera mycam;
 Board board;
-Character* activeUnit; //current selected unit, global
+static Character* activeUnit; //current selected unit, global
 vector<Character *> Nteam1, Nteam2;
 class Application : public EventCallbacks
 {
@@ -827,16 +827,16 @@ public:
 		teamSumMoves = 100000; // just set this initial value so it doesnt switch turns on the first render loop, it gets recomputed on each render loop
 		//NEW UNITS
 		//Team 1
-		charPos.at(0).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 1, 3);
-		charPos.at(0).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 1, 3);
-		charPos.at(0).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 1, 3);
-		charPos.at(0).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 1, 2);
+		charPos.at(0).at(0) = Character("Sword Lord T1", default, sword, false, 25, swrdTex, 1, 3);
+		charPos.at(0).at(1) = Character("Spear Wielder T1", default, spear, false, 25, spearTex, 1, 3);
+		charPos.at(0).at(2) = Character("Axe Master T1", default, axe, false, 25, axeTex, 1, 3);
+		charPos.at(0).at(3) = Character("Mage Tactician T1", default, magic, false, 25, magicTex, 1, 2);
 
 		//Team 2
-		charPos.at(6).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 2, 3);
-		charPos.at(6).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 2, 3);
-		charPos.at(6).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 2, 3);
-		charPos.at(6).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 2, 2);
+		charPos.at(6).at(0) = Character("Sword Lord T2", default, sword, false, 25, swrdTex, 2, 3);
+		charPos.at(6).at(1) = Character("Spear Wielder T2", default, spear, false, 25, spearTex, 2, 3);
+		charPos.at(6).at(2) = Character("Axe Master T2", default, axe, false, 25, axeTex, 2, 3);
+		charPos.at(6).at(3) = Character("Mage Tactician T2", default, magic, false, 25, magicTex, 2, 2);
 
 		////OLD TEMP UNITS
   //      charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture, 1);  // load the character spite textures
@@ -1006,57 +1006,57 @@ public:
 		psky->addUniform("P");
 		psky->addUniform("V");
 		psky->addUniform("M");
-psky->addUniform("campos");
-psky->addAttribute("vertPos");
-psky->addAttribute("vertNor");
-psky->addAttribute("vertTex");
+		psky->addUniform("campos");
+		psky->addAttribute("vertPos");
+		psky->addAttribute("vertNor");
+		psky->addAttribute("vertTex");
 
-//unused?
-/*pplane = std::make_shared<Program>();
-pplane->setVerbose(true);
-pplane->setShaderNames(resourceDirectory + "/plane_vertex.glsl", resourceDirectory + "/plane_frag.glsl");
-if (!pplane->init())
-	{
-	std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
-	exit(1);
-	}
-pplane->addUniform("P");
-pplane->addUniform("V");
-pplane->addUniform("M");
-pplane->addUniform("campos");
-pplane->addAttribute("vertPos");
-pplane->addAttribute("vertNor");
-pplane->addAttribute("vertTex");*/
+		//unused?
+		/*pplane = std::make_shared<Program>();
+		pplane->setVerbose(true);
+		pplane->setShaderNames(resourceDirectory + "/plane_vertex.glsl", resourceDirectory + "/plane_frag.glsl");
+		if (!pplane->init())
+			{
+			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+			exit(1);
+			}
+		pplane->addUniform("P");
+		pplane->addUniform("V");
+		pplane->addUniform("M");
+		pplane->addUniform("campos");
+		pplane->addAttribute("vertPos");
+		pplane->addAttribute("vertNor");
+		pplane->addAttribute("vertTex");*/
 
-//Terrain Shader
-bricks = std::make_shared<Program>();
-bricks->setVerbose(true);
-bricks->setShaderNames(resourceDirectory + "/brick_vertex.glsl", resourceDirectory + "/brick_fragment.glsl");
-bricks->init();
-bricks->addUniform("P");
-bricks->addUniform("V");
-bricks->addUniform("M");
-bricks->addUniform("camPos");
-bricks->addAttribute("vertPos");
-bricks->addAttribute("vertNor");
-bricks->addAttribute("vertTex");
+		//Terrain Shader
+		bricks = std::make_shared<Program>();
+		bricks->setVerbose(true);
+		bricks->setShaderNames(resourceDirectory + "/brick_vertex.glsl", resourceDirectory + "/brick_fragment.glsl");
+		bricks->init();
+		bricks->addUniform("P");
+		bricks->addUniform("V");
+		bricks->addUniform("M");
+		bricks->addUniform("camPos");
+		bricks->addAttribute("vertPos");
+		bricks->addAttribute("vertNor");
+		bricks->addAttribute("vertTex");
 
-//Repurposed for background textures and animated elements such as damage sprites or moving background elements
-billboards = std::make_shared<Program>();
-billboards->setVerbose(true);
-billboards->setShaderNames(resourceDirectory + "/vert_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
-if (!billboards->init())
-{
-	std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
-	exit(1);
-}
-billboards->addUniform("P");
-billboards->addUniform("V");
-billboards->addUniform("M");
-billboards->addUniform("campos");
-billboards->addAttribute("vertPos");
-billboards->addAttribute("vertNor");
-billboards->addAttribute("vertTex");
+		//Repurposed for background textures and animated elements such as damage sprites or moving background elements
+		billboards = std::make_shared<Program>();
+		billboards->setVerbose(true);
+		billboards->setShaderNames(resourceDirectory + "/vert_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
+		if (!billboards->init())
+		{
+			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+			exit(1);
+		}
+		billboards->addUniform("P");
+		billboards->addUniform("V");
+		billboards->addUniform("M");
+		billboards->addUniform("campos");
+		billboards->addAttribute("vertPos");
+		billboards->addAttribute("vertNor");
+		billboards->addAttribute("vertTex");
 	}
 
 	double overheadZoomLevel = 0;
@@ -1198,11 +1198,10 @@ billboards->addAttribute("vertTex");
 
 	void bindActiveUnit(int i, std::shared_ptr<Program> prog)
 	{
-		if ( (activeUnit[0].name == board.characters.at(i).name) && ((activeUnit[0].team) != (board.characters.at(i).team))) //send a uniform to the shader indicating if the unit is selected and should be highlighted
-		//THIS IF IS REALLY STRANGE != has to be used bc if == is used it colors the wrong unit as the active unit
+		if ( (activeUnit[0].team == activeTeam) && (activeUnit[0].name == board.characters[i].name) ) //send a uniform to the shader indicating if the unit is selected
 		{
+			cout << "active unit's team: " << activeUnit[0].team << endl;
 			glUniform1i(prog->getUniform("activeUnit"), 1); //true, highlight
-			cout << "activeUnit team: " << activeUnit[0].team << endl;
 		}
 		else //send a uniform to the shader
 		{
@@ -1231,7 +1230,7 @@ billboards->addAttribute("vertTex");
 		{
 			activeUnit = Nteam1.at(0); //set the iniatial unit to the sword unit on team 1, this isnt
 
-									   //offsets 
+			//offsets 
 			offset1swrd.x = 0; offset1swrd.y = 0;
 			offset2swrd.x = updateX; offset2swrd.y = 0;
 			offset1spear.x = 0; offset1spear.y = 0;
@@ -1481,7 +1480,7 @@ billboards->addAttribute("vertTex");
             newPos.x *= -1;
             newPos.z *= -1;
             TransBones = glm::translate(glm::mat4(1.0f), newPos);
-            mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0.25, -0.005, 0.25));
+            mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0.25, -0.0005, 0.25));
             M = TransPos * TransBones * S;
             glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
             brick->draw(bricks, FALSE);
@@ -1499,10 +1498,10 @@ billboards->addAttribute("vertTex");
 		for (int i = 0; i < board.characters.size(); i++) //Check every character on the game board
 		{
 			
-			glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0)); //draw all the sprites
+			glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + vec3(0, 0, 0)); //draw all the sprites
 			//Game Logic Stuff
 			//Add to the sum of the teams movement
-			if (activeTeam == board.characters[i].team)
+			if ((activeTeam == activeUnit[0].team) )
 			{
 				teamSumMoves += board.characters[i].moves;
 			}
@@ -1559,10 +1558,9 @@ billboards->addAttribute("vertTex");
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(swordUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
-
 				//call bind func here
 				bindActiveUnit(i, swordUnits); //bind the active unit true/false
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 
 				swordUnits->unbind();
 			}
@@ -1617,10 +1615,9 @@ billboards->addAttribute("vertTex");
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(spearUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
-
 				//call bind func here
 				bindActiveUnit(i, spearUnits); //bind the active unit true/false
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 
 				spearUnits->unbind();
 
@@ -1677,10 +1674,9 @@ billboards->addAttribute("vertTex");
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(axeUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
-
 				//call bind func here
 				bindActiveUnit(i, axeUnits); //bind the active unit true/false
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 
 				axeUnits->unbind();
 
@@ -1737,9 +1733,10 @@ billboards->addAttribute("vertTex");
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(magicUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				bindActiveUnit(i, magicUnits); //bind the active unit true/false
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 
-				bindActiveUnit(i, magicUnits); //bind the active unit true/false
+				
 
 				magicUnits->bind();
 
