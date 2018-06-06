@@ -39,10 +39,19 @@ void main()
 	if (team == 1) //red team
 	{
 		color *= vec4(1, .7, .7, 1);
+		color  = clamp(color, 0, 1);
 	}
 	else if (team == 2) //blue team
 	{
 		color *= vec4(.7, 1, 1, 1);
+		color  = clamp(color, 0, 1);
+	}
+
+	//update color if active unit
+	if (activeUnit == 1)
+	{
+		color *= vec4(1.75, 1.75, 1.75, 1);
+		color = clamp(color, 0, 1); //clamp the colors so they render correctly
 	}
 
 

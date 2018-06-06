@@ -1196,6 +1196,19 @@ billboards->addAttribute("vertTex");
 
 	}
 
+	void bindActiveUnit(int i, std::shared_ptr<Program> prog)
+	{
+		if ((activeUnit[0].name == board.characters.at(i).name) && (activeUnit[0].team == board.characters.at(i).team)) //send a uniform to the shader indicating if the unit is selected and should be highlighted
+		{
+			glUniform1i(prog->getUniform("activeUnit"), 1); //true, highlight
+			cout << "activeUnit team: " << activeUnit[0].team << endl;
+		}
+		else //send a uniform to the shader
+		{
+			glUniform1i(prog->getUniform("activeUnit"), 0); //false, dont highlight
+		}
+	}
+
 	/****DRAW
 	This is the most important function in your program - this is where you
 	will actually issue the commands to draw any geometry you have set up to
@@ -1203,14 +1216,39 @@ billboards->addAttribute("vertTex");
 	********/
 	void render()
 	{
-		//Game Logic Stuff//
+		//// Things to initialize for the first render loop ////
+		static float t_swrd = 0, t_spear = 0, t_axe = 0, t_magic = 0;
+		static vec2 offset1swrd, offset2swrd, offset1spear, offset2spear, offset1axe, offset2axe, offset1magic, offset2magic;
+		static int firstLoop = 0; //use to initialize the offsets once
+
+		//these work for 5x7 sprite sheets
+		float updateX = 1. / 5.;
+		float updateY = 1. / 7.;
+
+		//Things to setup on the first loop of render
+		if (firstLoop == 0)
+		{
+			activeUnit = Nteam1.at(0); //set the iniatial unit to the sword unit on team 1, this isnt
+
+									   //offsets 
+			offset1swrd.x = 0; offset1swrd.y = 0;
+			offset2swrd.x = updateX; offset2swrd.y = 0;
+			offset1spear.x = 0; offset1spear.y = 0;
+			offset2spear.x = updateX; offset2spear.y = 0;
+			offset1axe.x = 0; offset1axe.y = 0;
+			offset2axe.x = updateX; offset2axe.y = 0;
+			offset1magic.x = 0; offset1magic.y = 0;
+			offset2magic.x = updateX; offset2magic.y = 0;
+
+			firstLoop += 1;
+		}
+
+		//// Game Logic Stuff ////
 		updateTurn(); //function to check if the turn should be changed
 
 
-		//need a way to check if the turn should be changed, if all the movements on a team have been exhausted or if the player chooses to end the turn
 
-
-		//Graphics Stuff
+		//// Graphics Stuff ////
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		double frametime = get_last_elapsed_time();
@@ -1454,35 +1492,12 @@ billboards->addAttribute("vertTex");
 
 		//Draw the new animated sprites based on Weapon class
 
-		//Vars for the loop
-		static float t_swrd = 0, t_spear = 0, t_axe = 0, t_magic = 0;
-		static vec2 offset1swrd, offset2swrd, offset1spear, offset2spear, offset1axe, offset2axe, offset1magic, offset2magic;
-		static int firstLoop = 0; //use to initialize the offsets once
-
-		float updateX = 1. / 5.;
-		float updateY = 1. / 7.;
-
-		//Things to setup on the first loop of render
-		if (firstLoop == 0)
-		{
-			activeUnit = Nteam1.at(0); //set the iniatial unit to the sword unit on team 1, this isnt
-
-			//offsets 
-			offset1swrd.x = 0; offset1swrd.y = 0;
-			offset2swrd.x = updateX; offset2swrd.y = 0;
-			offset1spear.x = 0; offset1spear.y = 0;
-			offset2spear.x = updateX; offset2spear.y = 0;
-			offset1axe.x = 0; offset1axe.y = 0;
-			offset2axe.x = updateX; offset2axe.y = 0;
-			offset1magic.x = 0; offset1magic.y = 0;
-			offset2magic.x = updateX; offset2magic.y = 0;
-
-			firstLoop += 1;
-		}
+		
 		
 		teamSumMoves = 0; //recompute the total number of moves on the team
 		for (int i = 0; i < board.characters.size(); i++) //Check every character on the game board
 		{
+			
 			glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0)); //draw all the sprites
 			//Game Logic Stuff
 			//Add to the sum of the teams movement
@@ -1544,6 +1559,10 @@ billboards->addAttribute("vertTex");
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(swordUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
+				//call bind func here
+				bindActiveUnit(i, swordUnits); //bind the active unit true/false
+
 				swordUnits->unbind();
 			}
 			if (board.characters[i].weaponclass == spear) //Draw Spear Units to the board
@@ -1598,6 +1617,9 @@ billboards->addAttribute("vertTex");
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(spearUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
+				//call bind func here
+				bindActiveUnit(i, spearUnits); //bind the active unit true/false
 
 				spearUnits->unbind();
 
@@ -1655,6 +1677,10 @@ billboards->addAttribute("vertTex");
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(axeUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
+				//call bind func here
+				bindActiveUnit(i, axeUnits); //bind the active unit true/false
+
 				axeUnits->unbind();
 
 			}
@@ -1711,6 +1737,9 @@ billboards->addAttribute("vertTex");
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(magicUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
+				bindActiveUnit(i, magicUnits); //bind the active unit true/false
+
 				magicUnits->bind();
 
 			}
@@ -1726,7 +1755,6 @@ billboards->addAttribute("vertTex");
 					curcamPos = 1; //Set up the camera to move to the combat scene
 					moveCameraScene(); //make it so this function kicks off the battle scene animation
 					board.characters[i].position.x = board.characters[i].position.x - 1; //move a character so they are no longer overlapping with the enemy
-					cout << "GO TO BATTLE SCENE\n";
 				}
 			}
 			
