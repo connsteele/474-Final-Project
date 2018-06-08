@@ -1438,7 +1438,7 @@ public:
 		billboards->unbind();
 
 
-		//render combat plane
+		//render combat plane, change to draw a different 
 		bricks->bind();
 		glUniformMatrix4fv(bricks->getUniform("P"), 1, GL_FALSE, &P[0][0]);
 		glUniformMatrix4fv(bricks->getUniform("V"), 1, GL_FALSE, &V[0][0]);
@@ -1492,7 +1492,7 @@ public:
 
 		//Draw the new animated sprites based on Weapon class
 
-		
+		//check to see if any of the units have 0 health, if they do remove themfrom the gameboard
 		
 		teamSumMoves = 0; //recompute the total number of moves on the team
 		for (int i = 0; i < board.characters.size(); i++) //Check every character on the game board
@@ -1749,6 +1749,11 @@ public:
 				if ( (board.characters[i].position == board.characters[j].position) && (board.characters[i].team != board.characters[j].team) )
 				   //( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
 				{
+					Character defendingUnit = board.characters[j];
+
+
+					//do game logic to determine new health for units
+
 					//add the zoom to game board then transition to battle scene instead of jump cuts
 					curcamPos = 1; //Set up the camera to move to the combat scene
 					moveCameraScene(); //make it so this function kicks off the battle scene animation
