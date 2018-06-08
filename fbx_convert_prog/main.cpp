@@ -1131,7 +1131,11 @@ public:
 		}
 		else if (team == 2)
 		{
-			animateHudTeam1 = -6; //reset the other teams hud element
+			cout << "HIT TEAM 2" << endl;
+			if (animateHudTeam1 > -6)
+			{
+				animateHudTeam1 -= (1.7 * frametime); //incrementally move the hud
+			}
 		}
 
 		
