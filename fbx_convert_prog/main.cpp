@@ -194,6 +194,7 @@ public:
     GLuint Texture, Texture1, Texture2, Texture3, bgmountains1;
 	GLuint TexHector, TexMarth;
 	GLuint swrdTex, spearTex, axeTex, magicTex;
+	GLuint guiTeam1Tex;
 	//line
 	Line linerender;
 	Line smoothrender;
@@ -590,7 +591,7 @@ public:
 		int width, height, channels;
 		char filepath[1000];
 
-		//ANIMATED SPRITE TEXTURES
+		//-- ANIMATED SPRITE TEXTURES --//
 		//sword units
 		string str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
@@ -687,6 +688,30 @@ public:
 		glUseProgram(magicUnits->pid);
 		glUniform1i(Tex1Location, 0);
 		glUniform1i(Tex2Location, 1);
+
+
+		//-- GUI and HUD Textures --//
+		str = resourceDirectory + "/Team1turn.png";
+		strcpy(filepath, str.c_str());
+		data = stbi_load(filepath, &width, &height, &channels, 4);
+		glGenTextures(1, &guiTeam1Tex);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, guiTeam1Tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST); //Use nearest_nearest or linear_nearest
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		//One Texture HUD
+		//set the 2 textures to the correct samplers in the fragment shader:
+		Tex1Location = glGetUniformLocation(billboards->pid, "tex");//tex, tex2... sampler in the fragment shader
+		//Tex2Location = glGetUniformLocation(magicUnits->pid, "tex2");
+		// Then bind the uniform samplers to texture units:
+		glUseProgram(billboards->pid);
+		glUniform1i(Tex1Location, 0);
+		//glUniform1i(Tex2Location, 1);
 
 
 		//OLD SPRITE TEXTURES
@@ -1054,9 +1079,9 @@ public:
 		billboards->addUniform("V");
 		billboards->addUniform("M");
 		billboards->addUniform("campos");
-		billboards->addAttribute("vertPos");
-		billboards->addAttribute("vertNor");
-		billboards->addAttribute("vertTex");
+		billboards->addAttribute("vertPos"); //send vertice pos to the shader
+		billboards->addAttribute("vertNor"); //send vertice norms to the shader
+		billboards->addAttribute("vertTex"); //send vertice texture to the shader
 	}
 
 	double overheadZoomLevel = 0;
@@ -1327,7 +1352,6 @@ public:
 		// ...but we overwrite it (optional) with a perspective projection.
 		P = glm::perspective((float)(3.14159 / 4.), (float)((float)width/ (float)height), 0.1f, 1000.0f); //so much type casting... GLM metods are quite funny ones
 		
-		//// HUD Elements ////
 		
 
 		//Zoom the camera if T is pressed
@@ -1395,7 +1419,8 @@ public:
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Texture);
 
-		//// COMBAT DRAWING, MAKE THIS GRID DRAW A LARGE TERRAIN FOR BATTLES, CAN PUSH WHOLE COMBAT SCENE FURTHER AWAY FROM OVERHEAD SCENE IF NEEDED ////
+		////------------------------ COMBAT DRAWING, MAKE THIS GRID DRAW A LARGE TERRAIN FOR BATTLES INSTEAD, CAN PUSH WHOLE COMBAT SCENE FURTHER AWAY FROM OVERHEAD SCENE IF NEEDED --------------------------------////
+		//-- lets swap the grid to a heightmaped mesh or a billboard
 
 		//draw right set of bones
 		glm::mat4 TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
@@ -1416,6 +1441,9 @@ public:
 		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick - 4);
+
+		bonesprog->unbind();
+		
 
 		//Draw the billboards that have the background textures on them for the combat scene
 		billboards->bind();
@@ -1460,11 +1488,13 @@ public:
         
 
         glBindVertexArray(0);
-		bonesprog->unbind();
+		
         
         
 
-		//// OVERHEAD DRAWING ////
+		////-------------------------- OVERHEAD VIEW DRAWING ---------------------------------------////
+
+
 
 		//draw the overhead game grid
         bricks->bind();
@@ -1475,26 +1505,48 @@ public:
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, Texture3);
         S = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-        for (int i = 0; i < board.getBoardWidth() * board.getBoardHeight(); i++) {
+        for (int i = 0; i < board.getBoardWidth() * board.getBoardHeight(); i++) { //draw the game grid block by block
             vec3 newPos = board.mapBlocks[i];
             newPos.x *= -1;
             newPos.z *= -1;
-            TransBones = glm::translate(glm::mat4(1.0f), newPos);
-            mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0.25, -0.0005, 0.25));
-            M = TransPos * TransBones * S;
+			glm::mat4 TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+			glm:mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+            M = TransPos * TranstoMap * S;
             glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
             brick->draw(bricks, FALSE);
         }
         
         bricks->unbind();
 
+		//-- draw gui and hud elements --//
+
+		//team 1 turn indicator
+		billboards->bind();
+		glUniformMatrix4fv(bricks->getUniform("P"), 1, GL_FALSE, &P[0][0]); //send p and v matrices to the shader
+		glUniformMatrix4fv(swordUnits->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+		//do transformations and upload model matrix to shader
+		glm::mat4 TranstoMap = glm::translate(glm::mat4(1.0f), board.mapBlocks[board.mapBlocks.size()/2]); //translate to the pos stored in the middle of the gameboard
+		glm::mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0, 1., 6.)); //additional transformations to what the game board stores
+		float rotAmount = -3.1415926/2; //the angle of roation, rotate 90 degress to face the camera
+		glm::mat4 RotHud = glm::rotate(glm::mat4(1.0f), rotAmount, glm::vec3(1, 0, 0)); //rotate the hud so it faces the cam, define what axis rotAmount works on
+		glm::mat4 scaleHud = glm::scale(glm::mat4(1.0f), glm::vec3(4));
+		M = TransPos * TranstoMap * RotHud * scaleHud; //model matrix, order of operations: T * R * S
+		glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glBindVertexArray(BillboardVAOID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, guiTeam1Tex);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
+		billboards->unbind();
+
+		//sangle = -3.1415926 / 3.; //angle to rotate by
+		//glm::mat4 rotMtns = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //axis to apply rotation to
 
 
-		//Draw the new animated sprites based on Weapon class
-
+		//-- Draw the new animated sprites based on Weapon class --//
 		//check to see if any of the units have 0 health, if they do remove themfrom the gameboard
 		
-		teamSumMoves = 0; //recompute the total number of moves on the team
+		teamSumMoves = 0; //recompute the total number of moves on the team each render loop
 		for (int i = 0; i < board.characters.size(); i++) //Check every character on the game board
 		{
 			
@@ -1516,7 +1568,8 @@ public:
 
 				//cout << "found char with sword" << "\n";
 				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);				
+				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);	
+			
 
 				//UPDATE THE SPRITE
 				t_swrd += 0.25; //interpolation value for sword Units
@@ -1610,9 +1663,6 @@ public:
 				glUniform2fv(spearUnits->getUniform("offset2"), 1, &offset2spear[0]);
 				glUniform1i(spearUnits->getUniform("team"), board.characters[i].team);
 
-				//glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
-				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
-				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(spearUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 				//call bind func here
