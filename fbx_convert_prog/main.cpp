@@ -207,6 +207,10 @@ public:
 	//Current camera pos 
 	int curcamPos = 0; //init to 1 so first keypress works, if set to 0 2x key presses to work
 	bool zoomCam = FALSE;
+
+	//animated hud variables
+	int boolTeamHUD;
+	float animateHudTeam1;
     
 
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -455,6 +459,10 @@ public:
 		activeTeam = 1;
 		turnNumber = 0; //
 		teamEndTurn = 0; //set the initial turn not to end
+
+		//// Hud stuff ////
+		animateHudTeam1 = 0;
+		boolTeamHUD = 0;
 
 		//// Geometery Stuff ////
         brick = make_shared<Shape>();
@@ -1107,8 +1115,31 @@ public:
 
 	}
 
+	void updateHUDteams(int team, float frametime) //0 for off, 1 for team 1 hud, 2 for team 2 hud
+	{
+		if (team == 1)
+		{
+			if (animateHudTeam1 < 3)
+			{
+				animateHudTeam1 += (1.7 * frametime ); //incrementally move the hud
+			}
+			else
+			{
+				boolTeamHUD = 0; //turn off the update when the billboard moves so far
+			}
+			
+		}
+		else if (team == 2)
+		{
+			animateHudTeam1 = -6; //reset the other teams hud element
+		}
+
+		
+	}
+
 	void moveCameraScene() //calling this function alters the current camera scene, same functionality as pressing R
 	{
+		//moving the camera to the overhead scene will cause the current team's # to fly on screen
 		if (curcamPos == 0)
 		{
 			//overhead orientation
@@ -1117,6 +1148,18 @@ public:
 			mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
 			mycam.rot.y = 0;
 			//curcamPos = 1; //switch for next press
+
+			//update the team gui elements to fly in
+			if (activeTeam == 1)
+			{
+				boolTeamHUD = 1;
+			}
+			else if (activeTeam == 2) //update team2's hud
+			{
+				boolTeamHUD = 2;
+			}
+			
+
 		}
 		if (curcamPos == 1)
 		{
@@ -1520,18 +1563,23 @@ public:
 
 		//-- draw gui and hud elements --//
 
+		updateHUDteams(boolTeamHUD, frametime); //check if any of the Team HUD elements need to be updated
+
 		//team 1 turn indicator
 		billboards->bind();
-		glUniformMatrix4fv(bricks->getUniform("P"), 1, GL_FALSE, &P[0][0]); //send p and v matrices to the shader
-		glUniformMatrix4fv(swordUnits->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]); //send p and v matrices to the shader
+		glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
 		//do transformations and upload model matrix to shader
 		glm::mat4 TranstoMap = glm::translate(glm::mat4(1.0f), board.mapBlocks[board.mapBlocks.size()/2]); //translate to the pos stored in the middle of the gameboard
-		glm::mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0, 1., 6.)); //additional transformations to what the game board stores
+		glm::mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(-5.5, 1.5, 10.5)); //additional transformations to what the game board stores
+		//set up a variable that gets set at the start of this teams turn after combat so this flies in
+		
+		glm::mat4 TanimatedFlyIn = glm::translate(glm::mat4(1.0f), vec3(animateHudTeam1, 0, 0));
 		float rotAmount = -3.1415926/2; //the angle of roation, rotate 90 degress to face the camera
 		glm::mat4 RotHud = glm::rotate(glm::mat4(1.0f), rotAmount, glm::vec3(1, 0, 0)); //rotate the hud so it faces the cam, define what axis rotAmount works on
-		glm::mat4 scaleHud = glm::scale(glm::mat4(1.0f), glm::vec3(4));
-		M = TransPos * TranstoMap * RotHud * scaleHud; //model matrix, order of operations: T * R * S
-		glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glm::mat4 scaleHud = glm::scale(glm::mat4(1.0f), glm::vec3(1));
+		M = TransPos * TranstoMap * TanimatedFlyIn * RotHud * scaleHud; //model matrix, order of operations: T * R * S
+		glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glBindVertexArray(BillboardVAOID);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, guiTeam1Tex);
