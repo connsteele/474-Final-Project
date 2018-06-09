@@ -152,6 +152,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Board.cpp" />
+    <ClCompile Include="Character.cpp" />
     <ClCompile Include="ext\glad\src\glad.c" />
     <ClCompile Include="fbx_convert.cpp" />
     <ClCompile Include="GLSL.cpp" />
@@ -160,16 +162,20 @@
     <ClCompile Include="MatrixStack.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="Shape.cpp" />
+    <ClCompile Include="Team.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Board.h" />
     <ClInclude Include="bone.h" />
+    <ClInclude Include="Character.h" />
     <ClInclude Include="GLSL.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="MatrixStack.h" />
     <ClInclude Include="Program.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Team.h" />
     <ClInclude Include="tiny_obj_loader.h" />
     <ClInclude Include="WindowManager.h" />
   </ItemGroup>

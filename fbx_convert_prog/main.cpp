@@ -15,6 +15,9 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "Shape.h"
 #include "Line.h"
 #include "bone.h"
+#include "Character.h"
+#include "Team.h"
+#include "Board.h"
 
 //text stuff
 
@@ -23,9 +26,9 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #define AXE_UNSHEATHE_ANIMATION 2
 #define DODGE_ANIMATION 3
 
-
 using namespace std;
 using namespace glm;
+
 shared_ptr<Shape> shape;
 shared_ptr<Shape> plane;
 shared_ptr<Shape> brick;
@@ -36,7 +39,7 @@ static double moveCharX = 0;
 static double moveCharY = 0;
 
 //current team
-static int activeTeam = 1;
+static int activeTeam;
 static int turnNumber;
 static int teamEndTurn;//check if you want to end the turn, 1 for true end turn, 0 for false
 static int teamSumMoves;
@@ -167,6 +170,7 @@ public:
 };
 
 camera mycam;
+<<<<<<< HEAD
 enum weapon {
     sword,
     spear,
@@ -376,8 +380,11 @@ int Board::getBoardHeight() {
     return boardHeight;
 }
 
+=======
+>>>>>>> origin/Connor-06-04
 Board board;
-
+static Character* activeUnit; //current selected unit, global
+vector<Character *> Nteam1, Nteam2;
 class Application : public EventCallbacks
 {
 
@@ -400,6 +407,7 @@ public:
     GLuint Texture, Texture1, Texture2, Texture3, bgmountains1;
 	GLuint TexHector, TexMarth;
 	GLuint swrdTex, spearTex, axeTex, magicTex;
+	GLuint guiTeam1Tex;
 	//line
 	Line linerender;
 	Line smoothrender;
@@ -412,6 +420,10 @@ public:
 	//Current camera pos 
 	int curcamPos = 0; //init to 1 so first keypress works, if set to 0 2x key presses to work
 	bool zoomCam = FALSE;
+
+	//animated hud variables
+	int boolTeamHUD;
+	float animateHudTeam1;
     
 
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -569,12 +581,12 @@ public:
 		
 		if (key == GLFW_KEY_R && action == GLFW_PRESS)  // switch the camera position
 		{
-			curcamPos == 0;
+			curcamPos = 0;
 			moveCameraScene();
 		}
 		if (key == GLFW_KEY_F && action == GLFW_PRESS)  // switch the camera position
 		{
-			curcamPos == 1;
+			curcamPos = 1;
 			moveCameraScene();
 		}
 		if (key == GLFW_KEY_T && action == GLFW_RELEASE)
@@ -661,6 +673,10 @@ public:
 		turnNumber = 0; //
 		teamEndTurn = 0; //set the initial turn not to end
 
+		//// Hud stuff ////
+		animateHudTeam1 = 0;
+		boolTeamHUD = 0;
+
 		//// Geometery Stuff ////
         brick = make_shared<Shape>();
         brick->loadMesh(resourceDirectory + "/cube2.obj");
@@ -687,8 +703,9 @@ public:
 		cout << "root name " << root->name << endl;
 
 		// Initialize the Camera Position and orientation
-		mycam.pos = glm::vec3(-0.75, -10, -9); //Set initial Cam pos cented above the map plane
-		mycam.rot.x = 1; //rotate the camera to look down at the map plane
+		moveCameraScene();
+		//mycam.pos = glm::vec3(-0.75, -10, -9); //Set initial Cam pos cented above the map plane
+		//mycam.rot.x = 1; //rotate the camera to look down at the map plane
 		
 			
 		// Initialize mesh.
@@ -801,7 +818,7 @@ public:
 		int width, height, channels;
 		char filepath[1000];
 
-		//ANIMATED SPRITE TEXTURES
+		//-- ANIMATED SPRITE TEXTURES --//
 		//sword units
 		string str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
@@ -898,6 +915,30 @@ public:
 		glUseProgram(magicUnits->pid);
 		glUniform1i(Tex1Location, 0);
 		glUniform1i(Tex2Location, 1);
+
+
+		//-- GUI and HUD Textures --//
+		str = resourceDirectory + "/Team1turn.png";
+		strcpy(filepath, str.c_str());
+		data = stbi_load(filepath, &width, &height, &channels, 4);
+		glGenTextures(1, &guiTeam1Tex);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, guiTeam1Tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST); //Use nearest_nearest or linear_nearest
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		//One Texture HUD
+		//set the 2 textures to the correct samplers in the fragment shader:
+		Tex1Location = glGetUniformLocation(billboards->pid, "tex");//tex, tex2... sampler in the fragment shader
+		//Tex2Location = glGetUniformLocation(magicUnits->pid, "tex2");
+		// Then bind the uniform samplers to texture units:
+		glUseProgram(billboards->pid);
+		glUniform1i(Tex1Location, 0);
+		//glUniform1i(Tex2Location, 1);
 
 
 		//OLD SPRITE TEXTURES
@@ -1038,16 +1079,16 @@ public:
 		teamSumMoves = 100000; // just set this initial value so it doesnt switch turns on the first render loop, it gets recomputed on each render loop
 		//NEW UNITS
 		//Team 1
-		charPos.at(0).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 1, 3);
-		charPos.at(0).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 1, 3);
-		charPos.at(0).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 1, 3);
-		charPos.at(0).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 1, 2);
+		charPos.at(0).at(0) = Character("Sword Lord T1", default, sword, false, 25, swrdTex, 1, 3);
+		charPos.at(0).at(1) = Character("Spear Wielder T1", default, spear, false, 25, spearTex, 1, 3);
+		charPos.at(0).at(2) = Character("Axe Master T1", default, axe, false, 25, axeTex, 1, 3);
+		charPos.at(0).at(3) = Character("Mage Tactician T1", default, magic, false, 25, magicTex, 1, 2);
 
 		//Team 2
-		charPos.at(6).at(0) = Character("Sword Lord", default, sword, false, 25, swrdTex, 2, 3);
-		charPos.at(6).at(1) = Character("Spear Wielder", default, spear, false, 25, spearTex, 2, 3);
-		charPos.at(6).at(2) = Character("Axe Master", default, axe, false, 25, axeTex, 2, 3);
-		charPos.at(6).at(3) = Character("Mage Tactician", default, magic, false, 25, magicTex, 2, 2);
+		charPos.at(6).at(0) = Character("Sword Lord T2", default, sword, false, 25, swrdTex, 2, 3);
+		charPos.at(6).at(1) = Character("Spear Wielder T2", default, spear, false, 25, spearTex, 2, 3);
+		charPos.at(6).at(2) = Character("Axe Master T2", default, axe, false, 25, axeTex, 2, 3);
+		charPos.at(6).at(3) = Character("Mage Tactician T2", default, magic, false, 25, magicTex, 2, 2);
 
 		////OLD TEMP UNITS
   //      charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture, 1);  // load the character spite textures
@@ -1217,57 +1258,57 @@ public:
 		psky->addUniform("P");
 		psky->addUniform("V");
 		psky->addUniform("M");
-psky->addUniform("campos");
-psky->addAttribute("vertPos");
-psky->addAttribute("vertNor");
-psky->addAttribute("vertTex");
+		psky->addUniform("campos");
+		psky->addAttribute("vertPos");
+		psky->addAttribute("vertNor");
+		psky->addAttribute("vertTex");
 
-//unused?
-/*pplane = std::make_shared<Program>();
-pplane->setVerbose(true);
-pplane->setShaderNames(resourceDirectory + "/plane_vertex.glsl", resourceDirectory + "/plane_frag.glsl");
-if (!pplane->init())
-	{
-	std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
-	exit(1);
-	}
-pplane->addUniform("P");
-pplane->addUniform("V");
-pplane->addUniform("M");
-pplane->addUniform("campos");
-pplane->addAttribute("vertPos");
-pplane->addAttribute("vertNor");
-pplane->addAttribute("vertTex");*/
+		//unused?
+		/*pplane = std::make_shared<Program>();
+		pplane->setVerbose(true);
+		pplane->setShaderNames(resourceDirectory + "/plane_vertex.glsl", resourceDirectory + "/plane_frag.glsl");
+		if (!pplane->init())
+			{
+			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+			exit(1);
+			}
+		pplane->addUniform("P");
+		pplane->addUniform("V");
+		pplane->addUniform("M");
+		pplane->addUniform("campos");
+		pplane->addAttribute("vertPos");
+		pplane->addAttribute("vertNor");
+		pplane->addAttribute("vertTex");*/
 
-//Terrain Shader
-bricks = std::make_shared<Program>();
-bricks->setVerbose(true);
-bricks->setShaderNames(resourceDirectory + "/brick_vertex.glsl", resourceDirectory + "/brick_fragment.glsl");
-bricks->init();
-bricks->addUniform("P");
-bricks->addUniform("V");
-bricks->addUniform("M");
-bricks->addUniform("camPos");
-bricks->addAttribute("vertPos");
-bricks->addAttribute("vertNor");
-bricks->addAttribute("vertTex");
+		//Terrain Shader
+		bricks = std::make_shared<Program>();
+		bricks->setVerbose(true);
+		bricks->setShaderNames(resourceDirectory + "/brick_vertex.glsl", resourceDirectory + "/brick_fragment.glsl");
+		bricks->init();
+		bricks->addUniform("P");
+		bricks->addUniform("V");
+		bricks->addUniform("M");
+		bricks->addUniform("camPos");
+		bricks->addAttribute("vertPos");
+		bricks->addAttribute("vertNor");
+		bricks->addAttribute("vertTex");
 
-//Repurposed for background textures and animated elements such as damage sprites or moving background elements
-billboards = std::make_shared<Program>();
-billboards->setVerbose(true);
-billboards->setShaderNames(resourceDirectory + "/vert_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
-if (!billboards->init())
-{
-	std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
-	exit(1);
-}
-billboards->addUniform("P");
-billboards->addUniform("V");
-billboards->addUniform("M");
-billboards->addUniform("campos");
-billboards->addAttribute("vertPos");
-billboards->addAttribute("vertNor");
-billboards->addAttribute("vertTex");
+		//Repurposed for background textures and animated elements such as damage sprites or moving background elements
+		billboards = std::make_shared<Program>();
+		billboards->setVerbose(true);
+		billboards->setShaderNames(resourceDirectory + "/vert_billboard.glsl", resourceDirectory + "/fragment_billboard.glsl");
+		if (!billboards->init())
+		{
+			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+			exit(1);
+		}
+		billboards->addUniform("P");
+		billboards->addUniform("V");
+		billboards->addUniform("M");
+		billboards->addUniform("campos");
+		billboards->addAttribute("vertPos"); //send vertice pos to the shader
+		billboards->addAttribute("vertNor"); //send vertice norms to the shader
+		billboards->addAttribute("vertTex"); //send vertice texture to the shader
 	}
 
 	double overheadZoomLevel = 0;
@@ -1293,15 +1334,55 @@ billboards->addAttribute("vertTex");
 
 	}
 
+	void updateHUDteams(int team, float frametime) //0 for off, 1 for team 1 hud, 2 for team 2 hud
+	{
+		if (team == 1)
+		{
+			if (animateHudTeam1 < 3)
+			{
+				animateHudTeam1 += (1.7 * frametime ); //incrementally move the hud
+			}
+			else
+			{
+				boolTeamHUD = 0; //turn off the update when the billboard moves so far
+			}
+			
+		}
+		else if (team == 2)
+		{
+			cout << "HIT TEAM 2" << endl;
+			if (animateHudTeam1 > -6)
+			{
+				animateHudTeam1 -= (1.7 * frametime); //incrementally move the hud
+			}
+		}
+
+		
+	}
+
 	void moveCameraScene() //calling this function alters the current camera scene, same functionality as pressing R
 	{
+		//moving the camera to the overhead scene will cause the current team's # to fly on screen
 		if (curcamPos == 0)
 		{
 			//overhead orientation
-			mycam.pos = glm::vec3(-0.75, -10, -9);
+			//mycam.pos = glm::vec3(-0.75, -10, -9);
+			mycam.pos = glm::vec3(-0.75, -8.5, -8);
 			mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
 			mycam.rot.y = 0;
 			//curcamPos = 1; //switch for next press
+
+			//update the team gui elements to fly in
+			if (activeTeam == 1)
+			{
+				boolTeamHUD = 1;
+			}
+			else if (activeTeam == 2) //update team2's hud
+			{
+				boolTeamHUD = 2;
+			}
+			
+
 		}
 		if (curcamPos == 1)
 		{
@@ -1406,6 +1487,19 @@ billboards->addAttribute("vertTex");
 
 	}
 
+	void bindActiveUnit(int i, std::shared_ptr<Program> prog)
+	{
+		if ( (activeUnit[0].team == activeTeam) && (activeUnit[0].name == board.characters[i].name) ) //send a uniform to the shader indicating if the unit is selected
+		{
+			cout << "active unit's team: " << activeUnit[0].team << endl;
+			glUniform1i(prog->getUniform("activeUnit"), 1); //true, highlight
+		}
+		else //send a uniform to the shader
+		{
+			glUniform1i(prog->getUniform("activeUnit"), 0); //false, dont highlight
+		}
+	}
+
 	/****DRAW
 	This is the most important function in your program - this is where you
 	will actually issue the commands to draw any geometry you have set up to
@@ -1413,14 +1507,39 @@ billboards->addAttribute("vertTex");
 	********/
 	void render()
 	{
-		//Game Logic Stuff//
+		//// Things to initialize for the first render loop ////
+		static float t_swrd = 0, t_spear = 0, t_axe = 0, t_magic = 0;
+		static vec2 offset1swrd, offset2swrd, offset1spear, offset2spear, offset1axe, offset2axe, offset1magic, offset2magic;
+		static int firstLoop = 0; //use to initialize the offsets once
+
+		//these work for 5x7 sprite sheets
+		float updateX = 1. / 5.;
+		float updateY = 1. / 7.;
+
+		//Things to setup on the first loop of render
+		if (firstLoop == 0)
+		{
+			activeUnit = Nteam1.at(0); //set the iniatial unit to the sword unit on team 1, this isnt
+
+			//offsets 
+			offset1swrd.x = 0; offset1swrd.y = 0;
+			offset2swrd.x = updateX; offset2swrd.y = 0;
+			offset1spear.x = 0; offset1spear.y = 0;
+			offset2spear.x = updateX; offset2spear.y = 0;
+			offset1axe.x = 0; offset1axe.y = 0;
+			offset2axe.x = updateX; offset2axe.y = 0;
+			offset1magic.x = 0; offset1magic.y = 0;
+			offset2magic.x = updateX; offset2magic.y = 0;
+
+			firstLoop += 1;
+		}
+
+		//// Game Logic Stuff ////
 		updateTurn(); //function to check if the turn should be changed
 
 
-		//need a way to check if the turn should be changed, if all the movements on a team have been exhausted or if the player chooses to end the turn
 
-
-		//Graphics Stuff
+		//// Graphics Stuff ////
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		double frametime = get_last_elapsed_time();
@@ -1501,7 +1620,6 @@ billboards->addAttribute("vertTex");
 		// ...but we overwrite it (optional) with a perspective projection.
 		P = glm::perspective((float)(3.14159 / 4.), (float)((float)width/ (float)height), 0.1f, 1000.0f); //so much type casting... GLM metods are quite funny ones
 		
-		//// HUD Elements ////
 		
 
 		//Zoom the camera if T is pressed
@@ -1569,7 +1687,8 @@ billboards->addAttribute("vertTex");
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Texture);
 
-		//// COMBAT DRAWING, MAKE THIS GRID DRAW A LARGE TERRAIN FOR BATTLES, CAN PUSH WHOLE COMBAT SCENE FURTHER AWAY FROM OVERHEAD SCENE IF NEEDED ////
+		////------------------------ COMBAT DRAWING, MAKE THIS GRID DRAW A LARGE TERRAIN FOR BATTLES INSTEAD, CAN PUSH WHOLE COMBAT SCENE FURTHER AWAY FROM OVERHEAD SCENE IF NEEDED --------------------------------////
+		//-- lets swap the grid to a heightmaped mesh or a billboard
 
 		//draw right set of bones
 		glm::mat4 TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
@@ -1596,6 +1715,9 @@ billboards->addAttribute("vertTex");
 		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick - 4);
 
+		bonesprog->unbind();
+		
+
 		//Draw the billboards that have the background textures on them for the combat scene
 		billboards->bind();
 		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -1617,7 +1739,7 @@ billboards->addAttribute("vertTex");
 		billboards->unbind();
 
 
-		//render combat plane
+		//render combat plane, change to draw a different 
 		bricks->bind();
 		glUniformMatrix4fv(bricks->getUniform("P"), 1, GL_FALSE, &P[0][0]);
 		glUniformMatrix4fv(bricks->getUniform("V"), 1, GL_FALSE, &V[0][0]);
@@ -1639,11 +1761,13 @@ billboards->addAttribute("vertTex");
         
 
         glBindVertexArray(0);
-		bonesprog->unbind();
+		
         
         
 
-		//// OVERHEAD DRAWING ////
+		////-------------------------- OVERHEAD VIEW DRAWING ---------------------------------------////
+
+
 
 		//draw the overhead game grid
         bricks->bind();
@@ -1654,52 +1778,64 @@ billboards->addAttribute("vertTex");
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, Texture3);
         S = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-        for (int i = 0; i < board.getBoardWidth() * board.getBoardHeight(); i++) {
+        for (int i = 0; i < board.getBoardWidth() * board.getBoardHeight(); i++) { //draw the game grid block by block
             vec3 newPos = board.mapBlocks[i];
             newPos.x *= -1;
             newPos.z *= -1;
-            TransBones = glm::translate(glm::mat4(1.0f), newPos);
-            mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0.25, -1, 0.25));
-            M = TransPos * TransBones * S;
+			glm::mat4 TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+			glm:mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+            M = TransPos * TranstoMap * S;
             glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
             brick->draw(bricks, FALSE);
         }
         
         bricks->unbind();
 
+		//-- draw gui and hud elements --//
 
+		updateHUDteams(boolTeamHUD, frametime); //check if any of the Team HUD elements need to be updated
 
-		//Draw the new animated sprites based on Weapon class
-		//Vars for the loop
-		static float t_swrd = 0, t_spear = 0, t_axe = 0, t_magic = 0;
-		static vec2 offset1swrd, offset2swrd, offset1spear, offset2spear, offset1axe, offset2axe, offset1magic, offset2magic;
-		static int firstLoop = 0; //use to initialize the offsets once
-
-		float updateX = 1. / 5.;
-		float updateY = 1. / 7.;
-
-		//Things to setup on the first loop of render
-		if (firstLoop == 0)
-		{
-			activeUnit = Nteam1.at(0); //set the iniatial unit to the sword unit on team 1, this isnt
-
-			//offsets 
-			offset1swrd.x = 0; offset1swrd.y = 0;
-			offset2swrd.x = updateX; offset2swrd.y = 0;
-			offset1spear.x = 0; offset1spear.y = 0;
-			offset2spear.x = updateX; offset2spear.y = 0;
-			offset1axe.x = 0; offset1axe.y = 0;
-			offset2axe.x = updateX; offset2axe.y = 0;
-			offset1magic.x = 0; offset1magic.y = 0;
-			offset2magic.x = updateX; offset2magic.y = 0;
-
-			firstLoop += 1;
-		}
+		//team 1 turn indicator
+		billboards->bind();
+		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]); //send p and v matrices to the shader
+		glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+		//do transformations and upload model matrix to shader
+		glm::mat4 TranstoMap = glm::translate(glm::mat4(1.0f), board.mapBlocks[board.mapBlocks.size()/2]); //translate to the pos stored in the middle of the gameboard
+		glm::mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(-5.5, 1.5, 10.5)); //additional transformations to what the game board stores
+		//set up a variable that gets set at the start of this teams turn after combat so this flies in
 		
-		teamSumMoves = 0; //recompute the total number of moves on the team
+		glm::mat4 TanimatedFlyIn = glm::translate(glm::mat4(1.0f), vec3(animateHudTeam1, 0, 0));
+		float rotAmount = -3.1415926/2; //the angle of roation, rotate 90 degress to face the camera
+		glm::mat4 RotHud = glm::rotate(glm::mat4(1.0f), rotAmount, glm::vec3(1, 0, 0)); //rotate the hud so it faces the cam, define what axis rotAmount works on
+		glm::mat4 scaleHud = glm::scale(glm::mat4(1.0f), glm::vec3(1));
+		M = TransPos * TranstoMap * TanimatedFlyIn * RotHud * scaleHud; //model matrix, order of operations: T * R * S
+		glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glBindVertexArray(BillboardVAOID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, guiTeam1Tex);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
+		billboards->unbind();
+
+		//sangle = -3.1415926 / 3.; //angle to rotate by
+		//glm::mat4 rotMtns = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //axis to apply rotation to
+
+
+		//-- Draw the new animated sprites based on Weapon class --//
+		//check to see if any of the units have 0 health, if they do remove themfrom the gameboard
+		
+		teamSumMoves = 0; //recompute the total number of moves on the team each render loop
 		for (int i = 0; i < board.characters.size(); i++) //Check every character on the game board
 		{
-			//cout << i << "\n";
+			
+			glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + vec3(0, 0, 0)); //draw all the sprites
+			//Game Logic Stuff
+			//Add to the sum of the teams movement
+			if ((activeTeam == activeUnit[0].team) )
+			{
+				teamSumMoves += board.characters[i].moves;
+			}
+			//draw each weapon class
 			if (board.characters[i].weaponclass == sword) //draw sword units to the board
 			{
 				swordUnits->bind();
@@ -1710,7 +1846,8 @@ billboards->addAttribute("vertTex");
 
 				//cout << "found char with sword" << "\n";
 				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);				
+				glBindTexture(GL_TEXTURE_2D, board.characters[i].texture);	
+			
 
 				//UPDATE THE SPRITE
 				t_swrd += 0.25; //interpolation value for sword Units
@@ -1747,19 +1884,16 @@ billboards->addAttribute("vertTex");
 				glUniform2fv(swordUnits->getUniform("offset2"), 1, &offset2swrd[0]);
 				glUniform1i(swordUnits->getUniform("team"), board.characters[i].team);
 
-				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
+				//glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0));
 				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(swordUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				//call bind func here
+				bindActiveUnit(i, swordUnits); //bind the active unit true/false
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
-				swordUnits->unbind();
 
-				//Game Logic Stuff
-				if (activeTeam == board.characters[i].team) // add the sword units moveme
-				{
-					teamSumMoves += board.characters[i].moves;
-				}
+				swordUnits->unbind();
 			}
 			if (board.characters[i].weaponclass == spear) //Draw Spear Units to the board
 			{
@@ -1807,20 +1941,13 @@ billboards->addAttribute("vertTex");
 				glUniform2fv(spearUnits->getUniform("offset2"), 1, &offset2spear[0]);
 				glUniform1i(spearUnits->getUniform("team"), board.characters[i].team);
 
-				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
-				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
-				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(spearUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				//call bind func here
+				bindActiveUnit(i, spearUnits); //bind the active unit true/false
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 
 				spearUnits->unbind();
-
-				//Game Logic Stuff
-				if (activeTeam == board.characters[i].team) // add the spear units moveme
-				{
-					teamSumMoves += board.characters[i].moves;
-				}
 
 			}
 			if (board.characters[i].weaponclass == axe)
@@ -1870,19 +1997,17 @@ billboards->addAttribute("vertTex");
 				glUniform2fv(axeUnits->getUniform("offset2"), 1, &offset2axe[0]);
 				glUniform1i(axeUnits->getUniform("team"), board.characters[i].team);
 
-				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
+				//glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0.)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
 				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(axeUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				//call bind func here
+				bindActiveUnit(i, axeUnits); //bind the active unit true/false
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
 				axeUnits->unbind();
 
-				//Game Logic Stuff
-				if (activeTeam == board.characters[i].team) // add the axe units moveme
-				{
-					teamSumMoves += board.characters[i].moves;
-				}
 			}
 			if (board.characters[i].weaponclass == magic)
 			{
@@ -1931,19 +2056,18 @@ billboards->addAttribute("vertTex");
 				glUniform2fv(magicUnits->getUniform("offset2"), 1, &offset2magic[0]);
 				glUniform1i(magicUnits->getUniform("team"), board.characters[i].team);
 
-				glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, -0.35)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
+				//glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + glm::vec3(0, 0, 0)); //Our y and z planes are swapped, add the vector to get the sprites from intersecting with the board
 				//board.moveCharacter(board.characters[i].position.x, board.characters[i].position.y, board.characters[i].position.x + 1, board.characters[i].position.y + 1 );
 				//int moveCharacter(int charX, int charY, int destX, int destY);
 				M = TransSprites * Vi;
 				glUniformMatrix4fv(magicUnits->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				bindActiveUnit(i, magicUnits); //bind the active unit true/false
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
+				
+
 				magicUnits->bind();
 
-				//Game Logic Stuff
-				if (activeTeam == board.characters[i].team) // add the sword units moveme
-				{
-					teamSumMoves += board.characters[i].moves;
-				}
 			}
 
 			//Check to see if any characters are overlapping, theres probably a more efficent way to do this
@@ -1953,11 +2077,19 @@ billboards->addAttribute("vertTex");
 				if ( (board.characters[i].position == board.characters[j].position) && (board.characters[i].team != board.characters[j].team) )
 				   //( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
 				{
+					Character defendingUnit = board.characters[j];
+
+
+					//do game logic to determine new health for units
+
 					//add the zoom to game board then transition to battle scene instead of jump cuts
 					curcamPos = 1; //Set up the camera to move to the combat scene
 					moveCameraScene(); //make it so this function kicks off the battle scene animation
 					board.characters[i].position.x = board.characters[i].position.x - 1; //move a character so they are no longer overlapping with the enemy
+<<<<<<< HEAD
 					//cout << "GO TO BATTLE SCENE\n";
+=======
+>>>>>>> origin/Connor-06-04
 				}
 			}
 			

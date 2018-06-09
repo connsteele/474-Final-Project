@@ -73,6 +73,7 @@ public:
 	bool myplayanimation(float keyframenumber, int animationnum, int animation2num, float f) {
 		float ratio = 1. * animation[animationnum]->keyframes.size() / animation[animation2num]->keyframes.size();
 
+<<<<<<< HEAD
 		bool reset = true;
 		if ((int)keyframenumber >= animation[animationnum]->keyframes.size() - 1) {
 			return false;
@@ -106,6 +107,26 @@ public:
 		if (f) {
 			tf = animation[animationnum]->keyframes[mysize].translation;
 		}
+=======
+		if (animation[animation2num]->keyframes.size() -1 > keyframenumber)
+		{
+			float ratio = 1. * animation[animationnum]->keyframes.size() / animation[animation2num]->keyframes.size();
+
+
+			float fframe = (float)keyframenumber;
+			int framea = fframe;
+			int frameb = fframe + 1;
+			float t = fframe - (int)fframe;
+			int mysize = animation[animationnum]->keyframes.size() - 1;
+
+			quat qa = animation[animationnum]->keyframes[framea * ratio].quaternion;
+			quat qb = animation[animationnum]->keyframes[frameb * ratio].quaternion;
+			quat qr = slerp(qa, qb, t);
+
+			vec3 ta = animation[animationnum]->keyframes[framea*ratio].translation;
+			vec3 tb = animation[animationnum]->keyframes[frameb*ratio].translation;
+			vec3 tr = mix(ta, tb, t);
+>>>>>>> origin/Connor-06-04
 
 		mat4 M = mat4(qf);
 		mat4 T = translate(mat4(1), tf);
@@ -127,6 +148,31 @@ public:
 		return reset;
 
 	
+<<<<<<< HEAD
+=======
+			if (f >= 0.000001) {
+				tf = animation[animationnum]->keyframes[mysize].translation;
+			}
+
+			mat4 M = mat4(qf);
+			mat4 T = translate(mat4(1), tf);
+			M = T * M;
+			if (mat)
+			{
+				mat4 parentmat = mat4(1);
+				if (parent)
+					parentmat = *parent->mat;
+				*mat = parentmat * M;
+			}
+
+			else
+				*mat = mat4(1);
+
+			for (int i = 0; i < kids.size(); i++)
+				kids[i]->myplayanimation(keyframenumber, animationnum, animation2num, f);
+
+		}
+>>>>>>> origin/Connor-06-04
 
 	}
 
