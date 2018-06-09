@@ -1142,6 +1142,8 @@ public:
 
 	void updateHUDteams(int team, float frametime) //0 for off, 1 for team 1 hud, 2 for team 2 hud
 	{
+
+
 		if (team == 1)
 		{
 			if (animateHudTeam2 > -6) //move team 2 hud out 
@@ -1190,15 +1192,7 @@ public:
 			mycam.rot.y = 0;
 			//curcamPos = 1; //switch for next press
 
-			//update the team gui elements to fly in
-			if (activeTeam == 1)
-			{
-				boolTeamHUD = 1;
-			}
-			else if (activeTeam == 2) //update team2's hud
-			{
-				boolTeamHUD = 2;
-			}
+			
 			
 
 		}
@@ -1621,6 +1615,16 @@ public:
         bricks->unbind();
 
 		//-- draw gui and hud elements --//
+
+		//update the team gui elements to fly in and out
+		if (activeTeam == 1)
+		{
+			boolTeamHUD = 1;
+		}
+		else if (activeTeam == 2) //update team2's hud
+		{
+			boolTeamHUD = 2;
+		}
 
 		updateHUDteams(boolTeamHUD, frametime); //check if any of the Team HUD elements need to be updated
 
