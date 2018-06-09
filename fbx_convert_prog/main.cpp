@@ -5,6 +5,8 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 
 #include <iostream>
 #include <glad/glad.h>
+#include <windows.h>
+#include <mmsystem.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "GLSL.h"
@@ -867,6 +869,8 @@ public:
 		Nteam2.push_back(&board.characters[6]);
 		Nteam2.push_back(&board.characters[7]);
 
+        //PlaySound(TEXT("../resources/lostinthots.wav"), NULL, SND_FILENAME | SND_ASYNC);
+        //PlaySound(TEXT("../resources/nge-thanatos.wav"), NULL, SND_FILENAME | SND_NOSTOP);
 	}
 
 	//General OGL initialization - set OGL state here
@@ -1108,7 +1112,7 @@ public:
 	{	
 		if (activeTeam == 1) //check if you want to end team 1's turn
 		{
-			cout << "team 1 moves left: " << teamSumMoves << endl;
+			//cout << "team 1 moves left: " << teamSumMoves << endl;
 			//check if the sum characters movements have been exhausted, sum the characters movements and check if the sum == 0;
 			if (teamEndTurn == 1) //check to see if the player has pressed the end turn keys
 			{
@@ -1151,7 +1155,7 @@ public:
 		}
 		else if (activeTeam == 2) //check if you want to end team 2's turn
 		{
-			cout << "team 2 moves left: " << teamSumMoves << endl;
+			//cout << "team 2 moves left: " << teamSumMoves << endl;
 			//check if the sum characters movements have been exhausted, sum the characters movements and check if the sum == 0;
 			if (teamEndTurn == 1) //check to see if the player has pressed the end turn keys
 			{
@@ -1200,7 +1204,7 @@ public:
 	{
 		if ( (activeUnit[0].team == activeTeam) && (activeUnit[0].name == board.characters[i].name) ) //send a uniform to the shader indicating if the unit is selected
 		{
-			cout << "active unit's team: " << activeUnit[0].team << endl;
+			//cout << "active unit's team: " << activeUnit[0].team << endl;
 			glUniform1i(prog->getUniform("activeUnit"), 1); //true, highlight
 		}
 		else //send a uniform to the shader
@@ -1216,6 +1220,23 @@ public:
 	********/
 	void render()
 	{
+        static bool playingSong1 = true;
+        static bool playingSong2 = false;
+        if (playingSong1) {
+            playingSong2 = PlaySound(TEXT("../resources/lostinthots.wav"), NULL, SND_FILENAME | SND_NOSTOP | SND_ASYNC);
+            if (playingSong2) {
+                cout << "Playing Lost In Thoughts" << endl;
+                playingSong1 = false;
+            }  
+        }
+        else if (playingSong2){
+            playingSong1 = PlaySound(TEXT("../resources/nge-thanatos.wav"), NULL, SND_FILENAME | SND_NOSTOP | SND_ASYNC);
+            if (playingSong1) {
+                cout << "Playing NGE - Thanatos" << endl;
+                playingSong2 = false;
+            }
+        }
+            
 		//// Things to initialize for the first render loop ////
 		static float t_swrd = 0, t_spear = 0, t_axe = 0, t_magic = 0;
 		static vec2 offset1swrd, offset2swrd, offset1spear, offset2spear, offset1axe, offset2axe, offset1magic, offset2magic;
@@ -1774,7 +1795,7 @@ int main(int argc, char **argv)
 	}
 
 	Application *application = new Application();
-
+    
 	/* your main will always include a similar set up to establish your window
 		and GL context, etc. */
 	WindowManager * windowManager = new WindowManager();
