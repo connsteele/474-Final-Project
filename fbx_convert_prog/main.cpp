@@ -29,6 +29,7 @@ using namespace glm;
 shared_ptr<Shape> shape;
 shared_ptr<Shape> plane;
 shared_ptr<Shape> brick;
+shared_ptr<Shape> head;
 
 //temp vars to move char
 static double moveCharX = 0;
@@ -334,11 +335,11 @@ int Board::moveCharacter(int charX, int charY, int destX, int destY) { //fuck th
 	// check if character exists at that (charX,charY)
 	if (hasCharacter(charX, charY)) {
 		// if character exists
-		cout << "Char @ tile x: " << charX << " y:" << charY;
+		//cout << "Char @ tile x: " << charX << " y:" << charY;
 		// check if destination point has a character
 		if (hasCharacter(destX, destY)) {
 			// if has character
-			cout << "THERE WILL BE BLOOD" << endl;
+			//cout << "THERE WILL BE BLOOD" << endl;
 			// just print something right now, or do something that shows that there will be a detection when selecting (start fight)
 			return 1;
 		}
@@ -666,13 +667,19 @@ public:
         brick->resize();
         brick->init();
 
+		//head for skeletons
+		head = make_shared<Shape>();
+		head->loadMesh(resourceDirectory + "/HUMANHEAD.obj");
+		head->resize();
+		head->init();
+
 		for (int ii = 0; ii < 200; ii++)
 			animmat[ii] = mat4(1);
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
 		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root); //82 frames
-		//readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);  //92 frames
-		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, &root);  
+		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation,NULL);  //92 frames
+		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, NULL);  
 		//readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, &root);  
 		
 		root->set_animations(&all_animation,animmat,animmatsize);
@@ -1311,7 +1318,7 @@ billboards->addAttribute("vertTex");
 	{	
 		if (activeTeam == 1) //check if you want to end team 1's turn
 		{
-			cout << "team 1 moves left: " << teamSumMoves << endl;
+			//cout << "team 1 moves left: " << teamSumMoves << endl;
 			//check if the sum characters movements have been exhausted, sum the characters movements and check if the sum == 0;
 			if (teamEndTurn == 1) //check to see if the player has pressed the end turn keys
 			{
@@ -1354,7 +1361,7 @@ billboards->addAttribute("vertTex");
 		}
 		else if (activeTeam == 2) //check if you want to end team 2's turn
 		{
-			cout << "team 2 moves left: " << teamSumMoves << endl;
+			//cout << "team 2 moves left: " << teamSumMoves << endl;
 			//check if the sum characters movements have been exhausted, sum the characters movements and check if the sum == 0;
 			if (teamEndTurn == 1) //check to see if the player has pressed the end turn keys
 			{
@@ -1442,7 +1449,8 @@ billboards->addAttribute("vertTex");
 			totaltime_untilframe_ms = 0;
 			frame++;
 		}
-		if (frame > keyframe_length)  //Catch the end of the current animation
+		//if (frame > keyframe_length)  //Catch the end of the current animation
+		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t))
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
@@ -1453,6 +1461,7 @@ billboards->addAttribute("vertTex");
 			{
 				curcamPos = 0; //update the camera to move to the overhead scene
 				moveCameraScene(); //move the camera back after combat is over
+				play_anim_t = 0;
 
 				anim_num = 0; //reset the animation loop for the next time combat begins, exception will be thrown if this line is not here
 			}
@@ -1461,7 +1470,7 @@ billboards->addAttribute("vertTex");
 
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
-		root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
+		//root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
 		if (anim_num == AXE_SWING_ANIMATION && play_anim_t < 1) {
 			play_anim_t += frametime;
 		}
@@ -1571,6 +1580,11 @@ billboards->addAttribute("vertTex");
 		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick-4);
+
+		/*glm::mat4 TransHead = glm::translate(glm::mat4(1.0f), glm::vec3(2.0,2.0, -15.f));
+		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		shape->draw(bonesprog, false);*/
+
 
 		//draw left set of bones
 		TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
@@ -1943,7 +1957,7 @@ billboards->addAttribute("vertTex");
 					curcamPos = 1; //Set up the camera to move to the combat scene
 					moveCameraScene(); //make it so this function kicks off the battle scene animation
 					board.characters[i].position.x = board.characters[i].position.x - 1; //move a character so they are no longer overlapping with the enemy
-					cout << "GO TO BATTLE SCENE\n";
+					//cout << "GO TO BATTLE SCENE\n";
 				}
 			}
 			
