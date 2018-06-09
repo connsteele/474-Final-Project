@@ -478,9 +478,9 @@ public:
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
 		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root); //82 frames
-		//readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);  //92 frames
-		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, &root);  
-		//readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, &root);  
+		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, NULL);  //92 frames
+		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, NULL);  
+		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, NULL);  
 		
 		root->set_animations(&all_animation,animmat,animmatsize);
 
