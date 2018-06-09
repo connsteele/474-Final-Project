@@ -1349,7 +1349,7 @@ public:
 			totaltime_untilframe_ms = 0;
 			frame++;
 		}
-		if (frame > keyframe_length)  //Catch the end of the current animation
+		if (! root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t))  //Catch the end of the current animation
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
@@ -1362,6 +1362,7 @@ public:
 				moveCameraScene(); //move the camera back after combat is over
 
 				anim_num = 0; //reset the animation loop for the next time combat begins, exception will be thrown if this line is not here
+				play_anim_t = 0; //set to run (0th animation each time, reset combat)
 			}
 
 		}
