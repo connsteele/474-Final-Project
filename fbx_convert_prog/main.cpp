@@ -1349,7 +1349,8 @@ public:
 			totaltime_untilframe_ms = 0;
 			frame++;
 		}
-		if (frame > keyframe_length)  //Catch the end of the current animation
+		//if (frame > keyframe_length)  //Catch the end of the current animation
+		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t))
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
@@ -1360,7 +1361,7 @@ public:
 			{
 				curcamPos = 0; //update the camera to move to the overhead scene
 				moveCameraScene(); //move the camera back after combat is over
-
+				play_anim_t = 0;
 				anim_num = 0; //reset the animation loop for the next time combat begins, exception will be thrown if this line is not here
 			}
 
@@ -1368,7 +1369,7 @@ public:
 
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
-		root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
+		//root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
 		if (anim_num == AXE_SWING_ANIMATION && play_anim_t < 1) {
 			play_anim_t += frametime;
 		}
