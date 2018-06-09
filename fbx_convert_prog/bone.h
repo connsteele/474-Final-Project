@@ -86,6 +86,8 @@ public:
 
 			quat qa = animation[animationnum]->keyframes[framea].quaternion;
 			quat qb = animation[animationnum]->keyframes[frameb].quaternion;
+			if (t > 0.9f) // interpolates into the last 10 % of animation 1 into frame 0 of animation 2
+				qb = animation[animation2num]->keyframes[0].quaternion;
 			quat qr = slerp(qa, qb, t);
 
 			vec3 ta = animation[animationnum]->keyframes[framea].translation;
