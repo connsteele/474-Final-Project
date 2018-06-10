@@ -1187,7 +1187,7 @@ public:
 		}
 		else if (team == 2)
 		{
-			cout << "HIT TEAM 2" << endl;
+			//cout << "HIT TEAM 2" << endl;
 			if (animateHudTeam1 > -6) //move team one hud in
 			{
 				animateHudTeam1 -= (1.7 * frametime); //incrementally move the hud
@@ -1411,7 +1411,7 @@ public:
 		int keyframe_length = root->animation[anim_num]->keyframes.size();
 		int ms_length = root->animation[anim_num]->duration;
 		int anim_step_width_ms = ms_length / keyframe_length;
-		static int frame = 0;  
+		static float frame = 0;  
 		static float play_anim_t = 0; // interpolation value between 2 different animations
 		int num_animations = 2;
 		int framezerocount = 0;
@@ -1419,7 +1419,8 @@ public:
 		if ((totaltime_untilframe_ms >= anim_step_width_ms) && (curcamPos == 1)) //new condition, only update when you enter the combat sc
 		{
 			totaltime_untilframe_ms = 0;
-			frame++;
+			//frame++;
+			frame += (30.f * frametime);
 		}
 		//if (frame > keyframe_length)  //Catch the end of the current animation
 		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t))
