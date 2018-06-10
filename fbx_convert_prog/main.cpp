@@ -1616,7 +1616,7 @@ public:
 
 		//-- draw gui and hud elements --//
 
-		//update the team gui elements to fly in and out
+		//update the team gui elements to f`ly in and out
 		if (activeTeam == 1)
 		{
 			boolTeamHUD = 1;
