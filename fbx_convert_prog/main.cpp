@@ -170,6 +170,13 @@ public:
     }
 };
 
+int getColor(unsigned char* data, int width, int x, int y, int rgb)
+{
+    // rgb should be 0 for red, 1 for green, 2 for blue
+    int index = (3 * x) + (3 * width * y) + rgb;
+    return (int)data[index];
+}
+
 camera mycam;
 Board board;
 static Character* activeUnit; //current selected unit, global
@@ -201,6 +208,7 @@ public:
 	GLuint TexHector, TexMarth;
 	GLuint swrdTex, spearTex, axeTex, magicTex;
 	GLuint guiTeam1Tex, guiTeam2Tex; //Gui textures
+    GLuint layoutTex, grass, grassToRockyLeft, grassToRockyRight, rocky, lake, waterCenter, waterLeft, waterRight;
 	//line
 	Line linerender;
 	Line smoothrender;
@@ -217,6 +225,15 @@ public:
 	//animated hud variables
 	int boolTeamHUD;
 	float animateHudTeam1, animateHudTeam2;
+
+    vector<vec3> blackBlocks;
+    vector<vec3> redBlocks;
+    vector<vec3> blueBlocks;
+    vector<vec3> greenBlocks;
+    vector<vec3> yellowBlocks;
+    vector<vec3> whiteBlocks;
+    vector<vec3> magentaBlocks;
+    vector<vec3> tealBlocks;
     
 
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -627,11 +644,14 @@ public:
 		int width, height, channels;
 		char filepath[1000];
 
+
 		//-- ANIMATED SPRITE TEXTURES --//
 		//sword units
 		string str = resourceDirectory + "/swordMaster-spritesheet.png"; // actually get the first sprite texture
 		strcpy(filepath, str.c_str());
 		unsigned char* data = stbi_load(filepath, &width, &height, &channels, 4);
+        unsigned char* dataLayout = stbi_load(filepath, &width, &height, &channels, 3);
+        unsigned char* data1 = stbi_load(filepath, &width, &height, &channels, 4);
 		glGenTextures(1, &swrdTex);
 		//glGenTextures(1, &swrdTex2);
 		glActiveTexture(GL_TEXTURE0);
@@ -876,6 +896,141 @@ public:
 		glUniform1i(Tex1Location, 0);
 		glUniform1i(Tex2Location, 1);
         glUniform1i(Tex3Location, 1);
+
+        // load map file
+        str = resourceDirectory + "/TexTerrain/map1.bmp";
+        strcpy(filepath, str.c_str());
+        dataLayout = stbi_load(filepath, &width, &height, &channels, 3);
+        glGenTextures(1, &layoutTex);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, layoutTex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataLayout);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        cout << "Loaded " << str << endl;
+
+        str = resourceDirectory + "/TexTerrain/GrassTextureA.png";
+        strcpy(filepath, str.c_str());
+        data1 = stbi_load(filepath, &width, &height, &channels, 4);
+        glGenTextures(1, &grass);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, grass);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1); // errors out?
+        glGenerateMipmap(GL_TEXTURE_2D);
+        cout << "Loaded " << str << endl;
+
+        str = resourceDirectory + "/TexTerrain/GrassToRockyLeftTex.png";
+        strcpy(filepath, str.c_str());
+        data1 = stbi_load(filepath, &width, &height, &channels, 4);
+        glGenTextures(1, &grassToRockyLeft);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, grassToRockyLeft);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        cout << "Loaded " << str << endl;
+
+        str = resourceDirectory + "/TexTerrain/GrassToRockyRightTex.png";
+        strcpy(filepath, str.c_str());
+        data1 = stbi_load(filepath, &width, &height, &channels, 4);
+        glGenTextures(1, &grassToRockyRight);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, grassToRockyRight);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        cout << "Loaded " << str << endl;
+
+        str = resourceDirectory + "/TexTerrain/RockyTextureA.png";
+        strcpy(filepath, str.c_str());
+        data1 = stbi_load(filepath, &width, &height, &channels, 4);
+        glGenTextures(1, &rocky);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, rocky);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        cout << "Loaded " << str << endl;
+
+        str = resourceDirectory + "/TexTerrain/SmallLakeTexture.png";
+        strcpy(filepath, str.c_str());
+        data1 = stbi_load(filepath, &width, &height, &channels, 4);
+        glGenTextures(1, &lake);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, lake);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        cout << "Loaded " << str << endl;
+
+        str = resourceDirectory + "/TexTerrain/waterGrassHorizontalTex.png";
+        strcpy(filepath, str.c_str());
+        data1 = stbi_load(filepath, &width, &height, &channels, 4);
+        glGenTextures(1, &waterCenter);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, waterCenter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        cout << "Loaded " << str << endl;
+
+        str = resourceDirectory + "/TexTerrain/WaterGrassSwitchLeftTex.png";
+        strcpy(filepath, str.c_str());
+        data1 = stbi_load(filepath, &width, &height, &channels, 4);
+        glGenTextures(1, &waterLeft);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, waterLeft);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        cout << "Loaded " << str << endl;
+
+        str = resourceDirectory + "/TexTerrain/WaterGrassSwitchRightTex.png";
+        strcpy(filepath, str.c_str());
+        data1 = stbi_load(filepath, &width, &height, &channels, 4);
+        glGenTextures(1, &waterRight);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, waterRight);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        cout << "Loaded " << str << endl;
+
+        //Tex1Location = glGetUniformLocation(bricks->pid, "tex1");//tex, tex2... sampler in the fragment shader
+        //Tex2Location = glGetUniformLocation(bricks->pid, "tex2");
+        //// Then bind the uniform samplers to texture units:
+        //glUseProgram(bricks->pid);
+        //glUniform1i(Tex1Location, 0);
+        //glUniform1i(Tex2Location, 1);
+
 		smoothrender.init();
 		linerender.init();
 		line.push_back(vec3(0,0,-3));
@@ -895,6 +1050,52 @@ public:
             for (int j = 0; j < mapHeight; j++) {
                 vec3 blockPos = vec3(i, 0, j) - vec3(mapWidth / 2, 0 , mapHeight / 2);
                 mapBlocks.push_back(blockPos);
+            }
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                int red = getColor(dataLayout, 10, i, j, 0);
+                int green = getColor(dataLayout, 10, i, j, 1);
+                int blue = getColor(dataLayout, 10, i, j, 2);
+
+                vec3 newPos = vec3(i, 0, j) - vec3(mapWidth / 2, 0, mapHeight / 2);
+
+                if (red == 0 && green == 0 && blue == 0) // black
+                {
+                    blackBlocks.push_back(newPos);
+                }
+                if (red == 255 && green == 0 && blue == 0) // red
+                {
+                    redBlocks.push_back(newPos);
+                }
+                if (red == 0 && green == 255 && blue == 0) // green
+                {
+                    greenBlocks.push_back(newPos);
+                }
+                if (red == 0 && green == 0 && blue == 255) // blue
+                {
+                    blueBlocks.push_back(newPos);
+                }
+                if (red == 255 && green == 255 && blue == 0) // yellow
+                {
+                    yellowBlocks.push_back(newPos);
+                }
+                if (red == 255 && green == 255 && blue == 255) // white
+                {
+                    whiteBlocks.push_back(newPos);
+                }
+                if (red == 255 && green == 0 && blue == 255) // magenta
+                {
+                    magentaBlocks.push_back(newPos);
+                }
+                if (red == 124 && green == 255 && blue == 255) // teal
+                {
+                    tealBlocks.push_back(newPos);
+                }
+                
             }
         }
         
@@ -1626,16 +1827,124 @@ public:
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, Texture3);
         S = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-        for (int i = 0; i < board.getBoardWidth() * board.getBoardHeight(); i++) { //draw the game grid block by block
-            vec3 newPos = board.mapBlocks[i];
+   //     for (int i = 0; i < board.getBoardWidth() * board.getBoardHeight(); i++) { //draw the game grid block by block
+   //         vec3 newPos = board.mapBlocks[i];
+   //         newPos.x *= -1;
+   //         newPos.z *= -1;
+			//glm::mat4 TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+			//glm:mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+   //         M = TransPos * TranstoMap * S;
+   //         glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+   //         brick->draw(bricks, FALSE);
+   //     }
+        vec3 newPos;
+        glm::mat4 TranstoMap, TransPos;
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, grass);
+        for (int i = 0; i < blackBlocks.size(); i++) { //draw the game grid block by block
+            vec3 newPos = blackBlocks[i];
             newPos.x *= -1;
             newPos.z *= -1;
-			glm::mat4 TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
-			glm:mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+            TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+            TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
             M = TransPos * TranstoMap * S;
             glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
             brick->draw(bricks, FALSE);
         }
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, grassToRockyLeft);
+        for (int i = 0; i < redBlocks.size(); i++) { //draw the game grid block by block
+            newPos = redBlocks[i];
+            newPos.x *= -1;
+            newPos.z *= -1;
+            TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+            TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+            M = TransPos * TranstoMap * S;
+            glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+            brick->draw(bricks, FALSE);
+        }
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, grassToRockyRight);
+        for (int i = 0; i < greenBlocks.size(); i++) { //draw the game grid block by block
+            newPos = greenBlocks[i];
+            newPos.x *= -1;
+            newPos.z *= -1;
+            TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+            TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+            M = TransPos * TranstoMap * S;
+            glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+            brick->draw(bricks, FALSE);
+        }
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, rocky);
+        for (int i = 0; i < yellowBlocks.size(); i++) { //draw the game grid block by block
+            newPos = yellowBlocks[i];
+            newPos.x *= -1;
+            newPos.z *= -1;
+            TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+            TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+            M = TransPos * TranstoMap * S;
+            glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+            brick->draw(bricks, FALSE);
+        }
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, lake);
+        for (int i = 0; i < blueBlocks.size(); i++) { //draw the game grid block by block
+            newPos = blueBlocks[i];
+            newPos.x *= -1;
+            newPos.z *= -1;
+            TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+            TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+            M = TransPos * TranstoMap * S;
+            glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+            brick->draw(bricks, FALSE);
+        }
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, waterCenter);
+        for (int i = 0; i < whiteBlocks.size(); i++) { //draw the game grid block by block
+            newPos = whiteBlocks[i];
+            newPos.x *= -1;
+            newPos.z *= -1;
+            TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+            TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+            M = TransPos * TranstoMap * S;
+            glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+            brick->draw(bricks, FALSE);
+        }
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, waterLeft);
+        for (int i = 0; i < magentaBlocks.size(); i++) { //draw the game grid block by block
+            newPos = magentaBlocks[i];
+            newPos.x *= -1;
+            newPos.z *= -1;
+            TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+            TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+            M = TransPos * TranstoMap * S;
+            glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+            brick->draw(bricks, FALSE);
+        }
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, waterRight);
+        for (int i = 0; i < tealBlocks.size(); i++) { //draw the game grid block by block
+            newPos = tealBlocks[i];
+            newPos.x *= -1;
+            newPos.z *= -1;
+            TranstoMap = glm::translate(glm::mat4(1.0f), newPos); //translate to the pos stored in the gameboard
+            TransPos = glm::translate(glm::mat4(1.0f), vec3(0, -0.0005, 0.0)); //additional transformations to what the game board stores
+            M = TransPos * TranstoMap * S;
+            glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+            brick->draw(bricks, FALSE);
+        }
+
+
         
         bricks->unbind();
 
@@ -1658,8 +1967,8 @@ public:
 		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]); //send p and v matrices to the shader
 		glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
 		//do transformations and upload model matrix to shader
-		glm::mat4 TranstoMap = glm::translate(glm::mat4(1.0f), board.mapBlocks[board.mapBlocks.size()/2]); //translate to the pos stored in the middle of the gameboard
-		glm::mat4 TransPos = glm::translate(glm::mat4(1.0f), vec3(-5.5, 1.5, 10.5)); //additional transformations to what the game board stores
+		TranstoMap = glm::translate(glm::mat4(1.0f), board.mapBlocks[board.mapBlocks.size()/2]); //translate to the pos stored in the middle of the gameboard
+		TransPos = glm::translate(glm::mat4(1.0f), vec3(-5.5, 1.5, 10.5)); //additional transformations to what the game board stores
 		//set up a variable that gets set at the start of this teams turn after combat so this flies in
 		
 		glm::mat4 TanimatedFlyIn = glm::translate(glm::mat4(1.0f), vec3(animateHudTeam1, 0, 0));
