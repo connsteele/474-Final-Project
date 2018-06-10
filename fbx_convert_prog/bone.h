@@ -70,29 +70,32 @@ public:
 		}
 
 
-	void myplayanimation(float keyframenumber, int animationnum, int animation2num, float f) {
-
-		if (animation[animation2num]->keyframes.size() -1 > keyframenumber)
+	bool myplayanimation(float keyframenumber, int animationnum, int animation2num, float f) {
+		float ratio = 1. * animation[animationnum]->keyframes.size() / animation[animation2num]->keyframes.size();
+		if (animation[animationnum]->keyframes.size() - 1 > keyframenumber)
 		{
-			float ratio = 1. * animation[animationnum]->keyframes.size() / animation[animation2num]->keyframes.size();
-
-
+			bool reset = true;
+			if (keyframenumber >= animation[animationnum]->keyframes.size() - 1) {
+				return false;
+			}
 			float fframe = (float)keyframenumber;
 			int framea = fframe;
 			int frameb = fframe + 1;
 			float t = fframe - (int)fframe;
 			int mysize = animation[animationnum]->keyframes.size() - 1;
 
-			quat qa = animation[animationnum]->keyframes[framea * ratio].quaternion;
-			quat qb = animation[animationnum]->keyframes[frameb * ratio].quaternion;
+			quat qa = animation[animationnum]->keyframes[framea].quaternion;
+			quat qb = animation[animationnum]->keyframes[frameb].quaternion;
+			if (t > 0.9f) // interpolates into the last 10 % of animation 1 into frame 0 of animation 2
+				qb = animation[animation2num]->keyframes[0].quaternion;
 			quat qr = slerp(qa, qb, t);
 
-			vec3 ta = animation[animationnum]->keyframes[framea*ratio].translation;
-			vec3 tb = animation[animationnum]->keyframes[frameb*ratio].translation;
+			vec3 ta = animation[animationnum]->keyframes[framea].translation;
+			vec3 tb = animation[animationnum]->keyframes[frameb].translation;
 			vec3 tr = mix(ta, tb, t);
 
-			quat qc = animation[animation2num]->keyframes[framea].quaternion;
-			quat qd = animation[animation2num]->keyframes[frameb].quaternion;
+			quat qc = animation[animation2num]->keyframes[int(framea / ratio)].quaternion;
+			quat qd = animation[animation2num]->keyframes[int(frameb / ratio)].quaternion;
 			quat qe = slerp(qc, qd, t);
 
 			vec3 tc = animation[animationnum]->keyframes[mysize].translation;
@@ -102,8 +105,8 @@ public:
 			quat qf = slerp(qr, qe, f);
 			vec3 tf = mix(tr, te, f);
 
-	
-			if (f >= 0.000001) {
+
+			if (f) {
 				tf = animation[animationnum]->keyframes[mysize].translation;
 			}
 
@@ -118,12 +121,15 @@ public:
 				*mat = parentmat * M;
 			}
 
-			else
-				*mat = mat4(1);
 
-			for (int i = 0; i < kids.size(); i++)
-				kids[i]->myplayanimation(keyframenumber, animationnum, animation2num, f);
-
+			for (int i = 0; i < kids.size(); i++) {
+				if (!kids[i]->myplayanimation(keyframenumber, animationnum, animation2num, f))
+					reset = false;
+			}
+			return reset;
+		}
+		else {
+			return false;
 		}
 
 	}

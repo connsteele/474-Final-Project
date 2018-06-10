@@ -200,7 +200,7 @@ public:
     GLuint Texture, Texture1, Texture2, Texture3, bgmountains1;
 	GLuint TexHector, TexMarth;
 	GLuint swrdTex, spearTex, axeTex, magicTex;
-	GLuint guiTeam1Tex;
+	GLuint guiTeam1Tex, guiTeam2Tex; //Gui textures
 	//line
 	Line linerender;
 	Line smoothrender;
@@ -216,7 +216,7 @@ public:
 
 	//animated hud variables
 	int boolTeamHUD;
-	float animateHudTeam1;
+	float animateHudTeam1, animateHudTeam2;
     
 
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -489,6 +489,7 @@ public:
 
 		//// Hud stuff ////
 		animateHudTeam1 = 0;
+		animateHudTeam2 = 0;
 		boolTeamHUD = 0;
 
 		//// Geometery Stuff ////
@@ -502,9 +503,9 @@ public:
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
 		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root); //82 frames
-		//readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);  //92 frames
-		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, &root);  
-		//readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, &root);  
+		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, NULL);  //92 frames
+		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, NULL);  
+		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, NULL);  
 		
 		root->set_animations(&all_animation,animmat,animmatsize);
 
@@ -726,6 +727,7 @@ public:
 
 
 		//-- GUI and HUD Textures --//
+		//team 1 turn
 		str = resourceDirectory + "/Team1turn.png";
 		strcpy(filepath, str.c_str());
 		data = stbi_load(filepath, &width, &height, &channels, 4);
@@ -742,11 +744,30 @@ public:
 		//One Texture HUD
 		//set the 2 textures to the correct samplers in the fragment shader:
 		Tex1Location = glGetUniformLocation(billboards->pid, "tex");//tex, tex2... sampler in the fragment shader
-		//Tex2Location = glGetUniformLocation(magicUnits->pid, "tex2");
 		// Then bind the uniform samplers to texture units:
 		glUseProgram(billboards->pid);
 		glUniform1i(Tex1Location, 0);
-		//glUniform1i(Tex2Location, 1);
+
+		//team 2 turn 
+		str = resourceDirectory + "/Team2turn.png";
+		strcpy(filepath, str.c_str());
+		data = stbi_load(filepath, &width, &height, &channels, 4);
+		glGenTextures(1, &guiTeam2Tex);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, guiTeam2Tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST); //Use nearest_nearest or linear_nearest
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		//One Texture HUD
+		//set the 2 textures to the correct samplers in the fragment shader:
+		Tex1Location = glGetUniformLocation(billboards->pid, "tex");//tex, tex2... sampler in the fragment shader
+																	// Then bind the uniform samplers to texture units:
+		glUseProgram(billboards->pid);
+		glUniform1i(Tex1Location, 0);
 
 
 		//OLD SPRITE TEXTURES
@@ -1146,8 +1167,14 @@ public:
 
 	void updateHUDteams(int team, float frametime) //0 for off, 1 for team 1 hud, 2 for team 2 hud
 	{
+
+
 		if (team == 1)
 		{
+			if (animateHudTeam2 > -6) //move team 2 hud out 
+			{
+				animateHudTeam2 -= (1.7 * frametime); //incrementally move the hud
+			}
 			if (animateHudTeam1 < 3)
 			{
 				animateHudTeam1 += (1.7 * frametime ); //incrementally move the hud
@@ -1161,9 +1188,17 @@ public:
 		else if (team == 2)
 		{
 			cout << "HIT TEAM 2" << endl;
-			if (animateHudTeam1 > -6)
+			if (animateHudTeam1 > -6) //move team one hud in
 			{
 				animateHudTeam1 -= (1.7 * frametime); //incrementally move the hud
+			}
+			if (animateHudTeam2 < 3) //make this team2
+			{
+				animateHudTeam2 += (1.7 * frametime); //incrementally move the hud
+			}
+			else
+			{
+				boolTeamHUD = 0; //turn off the update when the billboard moves so far
 			}
 		}
 
@@ -1182,15 +1217,7 @@ public:
 			mycam.rot.y = 0;
 			//curcamPos = 1; //switch for next press
 
-			//update the team gui elements to fly in
-			if (activeTeam == 1)
-			{
-				boolTeamHUD = 1;
-			}
-			else if (activeTeam == 2) //update team2's hud
-			{
-				boolTeamHUD = 2;
-			}
+			
 			
 
 		}
@@ -1394,7 +1421,8 @@ public:
 			totaltime_untilframe_ms = 0;
 			frame++;
 		}
-		if (frame > keyframe_length)  //Catch the end of the current animation
+		//if (frame > keyframe_length)  //Catch the end of the current animation
+		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t))
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
@@ -1405,7 +1433,7 @@ public:
 			{
 				curcamPos = 0; //update the camera to move to the overhead scene
 				moveCameraScene(); //move the camera back after combat is over
-
+				play_anim_t = 0;
 				anim_num = 0; //reset the animation loop for the next time combat begins, exception will be thrown if this line is not here
 			}
 
@@ -1413,7 +1441,7 @@ public:
 
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
-		root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
+		//root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
 		if (anim_num == AXE_SWING_ANIMATION && play_anim_t < 1) {
 			play_anim_t += frametime;
 		}
@@ -1612,6 +1640,16 @@ public:
 
 		//-- draw gui and hud elements --//
 
+		//update the team gui elements to fly in and out
+		if (activeTeam == 1)
+		{
+			boolTeamHUD = 1;
+		}
+		else if (activeTeam == 2) //update team2's hud
+		{
+			boolTeamHUD = 2;
+		}
+
 		updateHUDteams(boolTeamHUD, frametime); //check if any of the Team HUD elements need to be updated
 
 		//team 1 turn indicator
@@ -1632,6 +1670,28 @@ public:
 		glBindVertexArray(BillboardVAOID);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, guiTeam1Tex);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+
+		billboards->unbind();
+
+		//team 2 turn indicator
+		billboards->bind();
+		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]); //send p and v matrices to the shader
+		glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+		//do transformations and upload model matrix to shader
+		TranstoMap = glm::translate(glm::mat4(1.0f), board.mapBlocks[board.mapBlocks.size() / 2]); //translate to the pos stored in the middle of the gameboard
+		TransPos = glm::translate(glm::mat4(1.0f), vec3(-5.5, 1.5, 10.5)); //additional transformations to what the game board stores
+																					 //set up a variable that gets set at the start of this teams turn after combat so this flies in
+
+		glm::mat4 T2animatedFlyIn = glm::translate(glm::mat4(1.0f), vec3(animateHudTeam2, 0, 0));
+		rotAmount = -3.1415926 / 2; //the angle of roation, rotate 90 degress to face the camera
+		RotHud = glm::rotate(glm::mat4(1.0f), rotAmount, glm::vec3(1, 0, 0)); //rotate the hud so it faces the cam, define what axis rotAmount works on
+		scaleHud = glm::scale(glm::mat4(1.0f), glm::vec3(1));
+		M = TransPos * TranstoMap * T2animatedFlyIn * RotHud * scaleHud; //model matrix, order of operations: T * R * S
+		glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glBindVertexArray(BillboardVAOID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, guiTeam2Tex);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
 
 		billboards->unbind();

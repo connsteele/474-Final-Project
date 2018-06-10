@@ -722,7 +722,7 @@ void DisplayListCurveKeys(FbxAnimCurve* pCurve, FbxProperty* pProperty)
 * and prints its contents in an xml format to stdout.
 */
 
-int readtobone(string file, all_animations *all_animation,bone **proot)
+int readtobone(string file, all_animations *all_animation, bone **proot)
 {
 
 	//ifstream fileHandle("fgdfg");
@@ -730,16 +730,16 @@ int readtobone(string file, all_animations *all_animation,bone **proot)
 	cout << endl << "filename:" << endl;
 	name_of_file = file;
 	const char* lFilename = name_of_file.c_str();
-	FILE *checkfile=fopen(lFilename,"rb");
+	FILE *checkfile = fopen(lFilename, "rb");
 	if (!checkfile)
-		{
+	{
 		cout << endl << "file not found!" << endl;
 		return 0;
-		}
+	}
 	else
 		cout << endl << "file exists!" << endl;
 	fclose(checkfile);
-	
+
 
 	// Initialize the SDK manager. This object handles all our memory management.
 	FbxManager* lSdkManager = FbxManager::Create();
@@ -769,38 +769,40 @@ int readtobone(string file, all_animations *all_animation,bone **proot)
 	lImporter->Destroy();
 
 	string create_file_path;
-	
-	
+
+
 	///////////////////
 	///	Model (Skeleton)
 	/////////////////
 	// Print the nodes of the scene and their attributes recursively.
 	// Note that we are not printing the root node because it should
 	// not contain any attributes.
-	FbxNode* lRootNode = lScene->GetRootNode();
-	int count_bones=0;
-	int child_count = lRootNode->GetChildCount();
-	for (int i = 0; i < child_count; i++)//nur einen knochen machen
-		CountBones(lRootNode->GetChild(i),count_bones);
+	if (proot)
+	{
+		FbxNode* lRootNode = lScene->GetRootNode();
+		int count_bones = 0;
+		int child_count = lRootNode->GetChildCount();
+		for (int i = 0; i < child_count; i++)//nur einen knochen machen
+			CountBones(lRootNode->GetChild(i), count_bones);
 
-	cout << endl;
-	cout << "Skeleton" << endl;
-	cout << endl;
-	cout << "count bones: " << count_bones << endl;
-	
-	
+		cout << endl;
+		cout << "Skeleton" << endl;
+		cout << endl;
+		cout << "count bones: " << count_bones << endl;
+
+
 		bone *root = new bone;
 		*proot = root;
 
-	if (lRootNode) 	
-	{
-		int anz = lRootNode->GetChildCount();
-		for (int i = 0; i < lRootNode->GetChildCount(); i++)//nur einen knochen machen
+		if (lRootNode)
+		{
+			int anz = lRootNode->GetChildCount();
+			for (int i = 0; i < lRootNode->GetChildCount(); i++)//nur einen knochen machen
 			{
-			PrintNode(root,lRootNode->GetChild(i), -1);
-			}			
+				PrintNode(root, lRootNode->GetChild(i), -1);
+			}
+		}
 	}
-
 	cout << "----------------------------------------------------------------------------------------------------" << endl;
 	///////////////////
 	///	Animation Data 
@@ -810,7 +812,7 @@ int readtobone(string file, all_animations *all_animation,bone **proot)
 
 	//cout << endl;
 	//cout << "Animation" << endl;	
-	PrintAnimationData(all_animation,lScene);
+	PrintAnimationData(all_animation, lScene);
 
 	/////////////////////
 	/////	End
