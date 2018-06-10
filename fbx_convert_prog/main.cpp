@@ -920,8 +920,9 @@ public:
         glUniform1i(Tex3Location, 1);
 
         // load map file
-        str = resourceDirectory + "/TexTerrain/map1.bmp";
-        strcpy(filepath, str.c_str());
+        //str = resourceDirectory + "/TexTerrain/map1.bmp";
+		str = resourceDirectory + "/TexTerrain/map2.bmp";
+		strcpy(filepath, str.c_str());
         dataLayout = stbi_load(filepath, &width, &height, &channels, 3);
         glGenTextures(1, &layoutTex);
         glActiveTexture(GL_TEXTURE0);
