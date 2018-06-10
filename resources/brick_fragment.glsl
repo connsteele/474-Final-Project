@@ -6,13 +6,13 @@ in vec3 vertex_nor;
 in vec3 vertex_pos;
 
 uniform vec3 camPos;
-uniform sampler2D bricks;
-uniform sampler2D skybox;
+uniform sampler2D tex1;
+uniform sampler2D tex2;
 
 
 void main()
 {
-	vec4 tcol = texture(bricks, vertex_tex);
+	vec4 tcol = texture(tex1, vertex_tex);
     color = tcol;
     // diffuse lighting
     vec3 n = normalize(vertex_nor);

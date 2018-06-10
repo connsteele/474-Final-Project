@@ -81,13 +81,12 @@ public:
 			float fframe = (float)keyframenumber;
 			int framea = fframe;
 			int frameb = fframe + 1;
-			float t = fframe - (int)fframe;
+			float t = fframe - framea;
 			int mysize = animation[animationnum]->keyframes.size() - 1;
 
 			quat qa = animation[animationnum]->keyframes[framea].quaternion;
 			quat qb = animation[animationnum]->keyframes[frameb].quaternion;
-			if (t > 0.9f) // interpolates into the last 10 % of animation 1 into frame 0 of animation 2
-				qb = animation[animation2num]->keyframes[0].quaternion;
+			
 			quat qr = slerp(qa, qb, t);
 
 			vec3 ta = animation[animationnum]->keyframes[framea].translation;
@@ -96,6 +95,15 @@ public:
 
 			quat qc = animation[animation2num]->keyframes[int(framea / ratio)].quaternion;
 			quat qd = animation[animation2num]->keyframes[int(frameb / ratio)].quaternion;
+
+			//cout << "t is : " << t << endl;
+			//cout << "fframe is : " << fframe << endl;
+			if (t > 0.9f && (fframe >= animation[animationnum]->keyframes.size() - 10)) { // interpolates into the last 10 % of animation 1 into frame 0 of animation 2
+				cout << "HERE MOTHER " << endl;
+				qc = animation[animation2num]->keyframes[0].quaternion;
+				qd = animation[animation2num]->keyframes[0].quaternion;
+			}
+
 			quat qe = slerp(qc, qd, t);
 
 			vec3 tc = animation[animationnum]->keyframes[mysize].translation;
