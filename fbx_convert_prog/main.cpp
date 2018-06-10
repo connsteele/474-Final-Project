@@ -206,6 +206,10 @@ public:
 	mat4 animmat[200];
 	int animmatsize=0;
 
+	mat4 animmat2[200];
+	int animmat2size = 0;
+
+
 	//Current camera pos 
 	int curcamPos = 0; //init to 1 so first keypress works, if set to 0 2x key presses to work
 	bool zoomCam = FALSE;
@@ -453,8 +457,11 @@ public:
 
 	/*Note that any gl calls must always happen after a GL state is initialized */
 	bone *root = NULL;
+	bone *root2 = NULL;
 	int size_stick = 0;
-	all_animations all_animation;
+	all_animations all_animation; 
+	all_animations all_animation2;
+	
 	void initGeom(const std::string& resourceDirectory)
 	{
 		//Game Logic Stuff///
@@ -474,16 +481,22 @@ public:
 
 		for (int ii = 0; ii < 200; ii++)
 			animmat[ii] = mat4(1);
+		for (int ii = 0; ii < 200; ii++)
+			animmat2[ii] = mat4(1);
+		
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
 		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root); //82 frames
-		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, NULL);  //92 frames
-		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, NULL);  
-		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, NULL);  
-		
-		root->set_animations(&all_animation,animmat,animmatsize);
+		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);  //92 frames
+		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, &root);  
+		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, &root);  
+		root->set_animations(&all_animation, animmat, animmatsize);
 
-		cout << "root name " << root->name << endl;
+		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root2); //82 frames
+		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, &root2); //82 frames*/
+
+		root2->set_animations(&all_animation2, animmat2, animmat2size);
+
 
 		// Initialize the Camera Position and orientation
 		moveCameraScene();
@@ -1352,8 +1365,10 @@ public:
 
 		static int anim_num = 0;
 
-		for (int ii = 0; ii < 200; ii++)
+		for (int ii = 0; ii < 200; ii++) //do we need to do this again?/
 			animmat[ii] = mat4(1);
+		for (int ii = 0; ii < 200; ii++)
+			animmat2[ii] = mat4(1);
 
 
 		//animation frame system
@@ -1371,6 +1386,7 @@ public:
 			frame++;
 		}
 		//if (frame > keyframe_length)  //Catch the end of the current animation
+		//if (!(root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t) && root2->myplayanimation(frame, RUN_ANIMATION, 1, play_anim_t)))
 		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t))
 		{
 			totaltime_untilframe_ms = 0;
@@ -1387,6 +1403,7 @@ public:
 			}
 
 		}
+		
 
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
