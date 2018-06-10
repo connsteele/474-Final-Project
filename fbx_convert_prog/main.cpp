@@ -174,6 +174,10 @@ camera mycam;
 Board board;
 static Character* activeUnit; //current selected unit, global
 vector<Character *> Nteam1, Nteam2;
+
+static bool playingSong1 = true;
+static bool playingSong2 = false;
+
 class Application : public EventCallbacks
 {
 
@@ -347,7 +351,7 @@ public:
 			}
 		}
 		//end current team's turn
-		if (key == GLFW_KEY_M && action == GLFW_PRESS) //update the global so the turn is changed
+		if (key == GLFW_KEY_N && action == GLFW_PRESS) //update the global so the turn is changed
 		{
 			
 			if (teamEndTurn == 0)
@@ -402,7 +406,27 @@ public:
 			//	//nothing
 			//}
 		}
-
+        if (key == GLFW_KEY_M && action == GLFW_PRESS)  // toggle between the two songs
+        {
+            //PlaySound(NULL, NULL, SND_ASYNC);
+            cout << "Switching Songs\n";
+            if (playingSong1 && !playingSong2) {
+                playingSong1 = false;
+                playingSong2 = true;
+            }
+            else if (playingSong2 && !playingSong1) {
+                playingSong1 = true;
+                playingSong2 = false;
+            }
+            if (playingSong2) {
+                PlaySound(TEXT("../resources/lostinthots.wav"), NULL, SND_FILENAME | SND_ASYNC);
+                //cout << "Playing Lost In Thoughts" << endl;
+            }
+            else if (playingSong1) {
+                PlaySound(TEXT("../resources/nge-thanatos.wav"), NULL, SND_FILENAME | SND_ASYNC);
+                //cout << "Playing NGE - Thanatos" << endl;
+            }
+        }
 	
 		
 		if (key == GLFW_KEY_C && action == GLFW_RELEASE)
@@ -457,6 +481,7 @@ public:
 	all_animations all_animation;
 	void initGeom(const std::string& resourceDirectory)
 	{
+        PlaySound(TEXT("../resources/nge-thanatos.wav"), NULL, SND_FILENAME | SND_ASYNC);
 		//Game Logic Stuff///
 		activeTeam = 1;
 		turnNumber = 0; //
@@ -1291,24 +1316,23 @@ public:
 	draw
 	********/
 	void render()
-	{
-        static bool playingSong1 = true;
-        static bool playingSong2 = false;
+	{   
         if (playingSong1) {
             playingSong2 = PlaySound(TEXT("../resources/lostinthots.wav"), NULL, SND_FILENAME | SND_NOSTOP | SND_ASYNC);
+            //cout << "Playing Lost In Thoughts" << endl;
             if (playingSong2) {
                 cout << "Playing Lost In Thoughts" << endl;
                 playingSong1 = false;
-            }  
+            }
         }
-        else if (playingSong2){
+        else if (playingSong2) {
             playingSong1 = PlaySound(TEXT("../resources/nge-thanatos.wav"), NULL, SND_FILENAME | SND_NOSTOP | SND_ASYNC);
+            //cout << "Playing NGE - Thanatos" << endl;
             if (playingSong1) {
                 cout << "Playing NGE - Thanatos" << endl;
                 playingSong2 = false;
             }
         }
-            
 		//// Things to initialize for the first render loop ////
 		static float t_swrd = 0, t_spear = 0, t_axe = 0, t_magic = 0;
 		static vec2 offset1swrd, offset2swrd, offset1spear, offset2spear, offset1axe, offset2axe, offset1magic, offset2magic;
