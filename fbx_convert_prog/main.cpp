@@ -200,7 +200,7 @@ public:
 	GLuint VertexArrayID, BillboardVAOID;
 
 	// Data necessary to give our box to OpenGL
-	GLuint VertexBufferID, VertexBufferIDimat, VertexNormDBox, VertexTexBox, IndexBufferIDBox, VertexBufferID2, VertexBufferID2imat;
+	GLuint VertexBufferID, VertexBufferIDimat, VertexNormDBox, VertexTexBox, IndexBufferIDBox;
     GLuint BillboardVertexBufferID, BillboardNormBufferID, BillboardTexBufferID, BillboardIndexBufferID;
 	GLuint swrdVertexBufferID, swrdNormBufferID, swrdTexBufferID, swrdIndexBufferID;
 
@@ -536,10 +536,10 @@ public:
 		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, NULL);
 		root->set_animations(&all_animation, animmat, animmatsize);
 
-		/*readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root2); //82 frames
+		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root2); //82 frames
 		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, NULL); //82 frames
 
-		root2->set_animations(&all_animation2, animmat2, animmat2size);*/
+		root2->set_animations(&all_animation2, animmat2, animmat2size);
 
 
 		// Initialize the Camera Position and orientation
@@ -577,6 +577,7 @@ public:
 		vector<vec3> pos;
 		vector<unsigned int> imat;
 		root->write_to_VBOs(vec3(0, 0, 0), pos, imat);
+		root2->write_to_VBOs(vec3(0, 0, 0), pos, imat);
 		size_stick = pos.size();
 		//actually memcopy the data - only do this once
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*pos.size(), pos.data(), GL_DYNAMIC_DRAW);
@@ -590,25 +591,7 @@ public:
 		glEnableVertexAttribArray(1);
 		glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 0, (void*)0);
 
-		//*****************SKELETON 2 ********************************************
-		/*glGenBuffers(1, &VertexBufferID2);
-		//set the current state to focus on our vertex buffer
-		glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID2);
 		
-		root2->write_to_VBOs(vec3(0, 0, 0), pos, imat);
-		size_stick = pos.size();
-		//actually memcopy the data - only do this once
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*pos.size(), pos.data(), GL_DYNAMIC_DRAW);
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-		//indices of matrix:
-		glGenBuffers(1, &VertexBufferID2imat);
-		glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID2imat);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(uint)*imat.size(), imat.data(), GL_DYNAMIC_DRAW);
-		glEnableVertexAttribArray(3);
-		glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, 0, (void*)0);*/
-		/**********************************************************************************/
         // billboard VAO and VBO
         glGenVertexArrays(1, &BillboardVAOID);
         glBindVertexArray(BillboardVAOID);
@@ -1701,6 +1684,9 @@ public:
 		int keyframe_length = root->animation[anim_num]->keyframes.size();
 		int ms_length = root->animation[anim_num]->duration;
 		int anim_step_width_ms = ms_length / keyframe_length;
+		int keyframe_length2 = root2->animation[anim_num]->keyframes.size();
+		int ms_length2 = root2->animation[anim_num]->duration;
+		int anim_step_width_ms2 = ms_length2 / keyframe_length2;
 		static float frame = 0;  
 		static float play_anim_t = 0; // interpolation value between 2 different animations
 		
