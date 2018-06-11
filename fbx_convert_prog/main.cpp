@@ -6,6 +6,8 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include <iostream>
 #include <glad/glad.h>
 #include <windows.h>
+#include <ctime> //random number generation
+#include <cstdlib> //random number generation
 #include <mmsystem.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -27,6 +29,17 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #define AXE_SWING_ANIMATION 1
 #define AXE_UNSHEATHE_ANIMATION 2
 #define DODGE_ANIMATION 3
+
+//combat logic
+#define SWORD_HIT 0.90
+#define SWORD_DMG 2
+#define AXE_HIT 0.75
+#define AXE_DMG 2
+#define LANCE_HIT 0.80
+#define LANCE_DMG 3
+#define MAGIC_HIT 0.95
+#define MAGIC_DMG 1
+
 
 using namespace std;
 using namespace glm;
@@ -314,7 +327,7 @@ public:
 		//Active Unit Selection
 		if (key == GLFW_KEY_1 && action == GLFW_PRESS)
 		{
-			if (activeTeam == 1)
+			if (activeTeam == 1  && Nteam1.at(0)->isCharacter == 1)
 			{
 				activeUnit = Nteam1.at(0);
 				//upload the current activeUnit to the shader, need to find an efficent way to do this
@@ -322,7 +335,7 @@ public:
 
 				//activeUnit = &board.characters[0];
 			}
-			else if (activeTeam == 2)
+			else if (activeTeam == 2 && Nteam2.at(0)->isCharacter == 1)
 			{
 				activeUnit = Nteam2.at(0);
 				//activeUnit = &board.characters[0+4];
@@ -330,12 +343,12 @@ public:
 		}
 		if (key == GLFW_KEY_2 && action == GLFW_PRESS)
 		{
-			if (activeTeam == 1)
+			if (activeTeam == 1 && Nteam1.at(1)->isCharacter == 1)
 			{
 				activeUnit = Nteam1.at(1);
 				//activeUnit = &board.characters[1];
 			}
-			else if (activeTeam == 2)
+			else if (activeTeam == 2 && Nteam1.at(1)->isCharacter == 1)
 			{
 				activeUnit = Nteam2.at(1);
 				//activeUnit = &board.characters[1 + 4];
@@ -343,12 +356,12 @@ public:
 		}
 		if (key == GLFW_KEY_3 && action == GLFW_PRESS)
 		{
-			if (activeTeam == 1)
+			if (activeTeam == 1 && Nteam1.at(2)->isCharacter == 1)
 			{
 				activeUnit = Nteam1.at(2);
 				//activeUnit = &board.characters[2];
 			}
-			else if (activeTeam == 2)
+			else if (activeTeam == 2  && Nteam2.at(2)->isCharacter == 1)
 			{
 				activeUnit = Nteam2.at(2);
 				//activeUnit = &board.characters[2 + 4];
@@ -356,12 +369,12 @@ public:
 		}
 		if (key == GLFW_KEY_4 && action == GLFW_PRESS)
 		{
-			if (activeTeam == 1)
+			if (activeTeam == 1 && Nteam1.at(3)->isCharacter == 1)
 			{
 				activeUnit = Nteam1.at(3);
 				//activeUnit = &board.characters[3];
 			}
-			else if (activeTeam == 2)
+			else if (activeTeam == 2 && Nteam2.at(3)->isCharacter == 1)
 			{
 				activeUnit = Nteam2.at(3);
 				//activeUnit = &board.characters[3 + 4];
@@ -503,6 +516,9 @@ public:
 		activeTeam = 1;
 		turnNumber = 0; //
 		teamEndTurn = 0; //set the initial turn not to end
+
+		//combat logic
+		srand(static_cast <unsigned> (time(0))); //get a truly random number for damage calculation, only do this once
 
 		//// Hud stuff ////
 		animateHudTeam1 = 0;
@@ -1511,7 +1527,19 @@ public:
 			{
 				teamEndTurn = 0;
 				activeTeam = 2;
-				activeUnit = Nteam2.at(0); //change the active unit
+
+				//check which units are still alive to set the active unit
+				//check which units are still alive to set the active unit
+				for (int ichar = 0; ichar < Nteam2.size(); ichar++)
+				{
+					if (Nteam2.at(ichar)->isCharacter == 1)
+					{
+						activeUnit = Nteam2.at(ichar); //change the active unit
+
+						break;
+					}
+				}
+				//activeUnit = Nteam2.at(0); //change the active unit
 
 				//reset the moves for all the new current team's units
 				for (int ii = 0; ii < Nteam2.size(); ii++)
@@ -1530,7 +1558,16 @@ public:
 			else if (teamSumMoves <= 0) // check if the sum of movements on this team is 0
 			{
 				activeTeam = 2;
-				activeUnit = Nteam2.at(0); //change the active unit
+				for (int ichar = 0; ichar < Nteam2.size(); ichar++)
+				{
+					if (Nteam2.at(ichar)->isCharacter == 1)
+					{
+						activeUnit = Nteam2.at(ichar); //change the active unit
+
+						break;
+					}
+				}
+				//activeUnit = Nteam2.at(0); //change the active unit
 
 				//reset the moves for all the new current team's units
 				for (int ii = 0; ii < Nteam2.size(); ii++)
@@ -1554,7 +1591,16 @@ public:
 			{
 				teamEndTurn = 0;
 				activeTeam = 1;
-				activeUnit = Nteam1.at(0); //change the active unit
+				for (int ichar = 0; ichar < Nteam1.size(); ichar++)
+				{
+					if (Nteam1.at(ichar)->isCharacter == 1)
+					{
+						activeUnit = Nteam1.at(ichar); //change the active unit
+
+						break;
+					}
+				}
+				//activeUnit = Nteam1.at(0); //change the active unit, OLD
 
 				//reset the moves for all the new current team's units
 				for (int ii = 0; ii < Nteam2.size(); ii++)
@@ -1572,7 +1618,16 @@ public:
 			else if (teamSumMoves <= 0) // check if the sum of movements on this team is 0 
 			{
 				activeTeam = 1;
-				activeUnit = Nteam1.at(0); //change the active unit
+				for (int ichar = 0; ichar < Nteam1.size(); ichar++)
+				{
+					if (Nteam1.at(ichar)->isCharacter == 1)
+					{
+						activeUnit = Nteam1.at(ichar); //change the active unit
+
+						break;
+					}
+				}
+				//activeUnit = Nteam1.at(0); //change the active unit OLD
 
 				//reset the moves for all the new current team's units
 				for (int ii = 0; ii < Nteam2.size(); ii++)
@@ -2079,17 +2134,21 @@ public:
 		//glm::mat4 rotMtns = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //axis to apply rotation to
 
 
-		//-- Draw the new animated sprites based on Weapon class --//
-		//check to see if any of the units have 0 health, if they do remove themfrom the gameboard
-		
+
+		//-- Draw the new animated sprites based on Weapon class --//		
 		teamSumMoves = 0; //recompute the total number of moves on the team each render loop
 		for (int i = 0; i < board.characters.size(); i++) //Check every character on the game board
 		{
 			
+			//check to see if any of the units have 0 health, if they do set their status as a living character to false
+			if (board.characters[i].health <= 0)
+			{
+				board.characters[i].isCharacter = 0;
+			}
+
 			glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + vec3(0, 0, 0)); //draw all the sprites
 
 			//draw the health for all units
-			//draw the movement for the current active unit
 			billboards->bind();
 			glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]); //send p and v matrices to the shader
 			glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
@@ -2122,7 +2181,7 @@ public:
 				teamSumMoves += board.characters[i].moves;
 			}
 			//draw each weapon class
-			if (board.characters[i].weaponclass == sword) //draw sword units to the board
+			if ((board.characters[i].weaponclass == sword)  && (board.characters[i].isCharacter == 1)) //draw sword units to the board
 			{
 				swordUnits->bind();
 				glUniformMatrix4fv(swordUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -2181,7 +2240,7 @@ public:
 
 				swordUnits->unbind();
 			}
-			if (board.characters[i].weaponclass == spear) //Draw Spear Units to the board
+			if ((board.characters[i].weaponclass == spear) && (board.characters[i].isCharacter == 1)) //Draw Spear Units to the board
 			{
 				spearUnits->bind();
 				glUniformMatrix4fv(spearUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -2236,7 +2295,7 @@ public:
 				spearUnits->unbind();
 
 			}
-			if (board.characters[i].weaponclass == axe)
+			if ((board.characters[i].weaponclass == axe) && (board.characters[i].isCharacter == 1))
 			{
 				axeUnits->bind();
 				glUniformMatrix4fv(axeUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -2295,7 +2354,7 @@ public:
 				axeUnits->unbind();
 
 			}
-			if (board.characters[i].weaponclass == magic)
+			if ((board.characters[i].weaponclass == magic) && (board.characters[i].isCharacter == 1))
 			{
 				magicUnits->bind();
 				glUniformMatrix4fv(magicUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -2357,24 +2416,83 @@ public:
 			}
 
 			//Check to see if any characters are overlapping, theres probably a more efficent way to do this
-			for (int j = 0; j < board.characters.size(); j++)
+			if (activeUnit[0].isCharacter == 1)
 			{
-				//Check if units have the same postion and are on different teams
-				if ( (board.characters[i].position == board.characters[j].position) && (board.characters[i].team != board.characters[j].team) )
-				   //( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
+				for (int j = 0; j < board.characters.size(); j++)
 				{
-					Character defendingUnit = board.characters[j];
+					//Check if units have the same postion and are on different teams
+					if ((activeUnit[0].position == board.characters[j].position) && (activeUnit[0].team != board.characters[j].team))
+						//( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
+					{
+						Character* defendingUnit = &board.characters[j];
 
+						if (defendingUnit[0].isCharacter == 0) //break out and dont do anything if the defendingUnit is no longer alive
+						{
+							break;
+						}
 
-					//do game logic to determine new health for units
+						////check what what weapon type is attacking the defending Unit to do damage calculations
 
-					//add the zoom to game board then transition to battle scene instead of jump cuts
-					curcamPos = 1; //Set up the camera to move to the combat scene
-					moveCameraScene(); //make it so this function kicks off the battle scene animation
-					board.characters[i].position.x = board.characters[i].position.x - 1; //move a character so they are no longer overlapping with the enemy
+						float hitChance = static_cast <float> (rand()) / static_cast <float> (RAND_MAX); //get a random number between 0.0 and 1.0
+
+						if (activeUnit[0].weaponclass == sword)
+						{
+							cout << "hit value is: " << hitChance << endl;
+							if (hitChance > SWORD_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+							{
+								;
+							}
+							else if (hitChance <= SWORD_HIT) //if the r value is less than or equal to hit rate then hit
+							{
+								defendingUnit[0].health -= SWORD_DMG;
+							}
+						}
+						else if (activeUnit[0].weaponclass == axe)
+						{
+							cout << "hit value is: " << hitChance << endl;
+							if (hitChance > AXE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+							{
+								;
+							}
+							else if (hitChance <= AXE_HIT) //if the r value is less than or equal to hit rate then hit
+							{
+								defendingUnit[0].health -= AXE_DMG;
+							}
+						}
+						else if (activeUnit[0].weaponclass == spear)
+						{
+							cout << "hit value is: " << hitChance << endl;
+							if (hitChance > LANCE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+							{
+								;
+							}
+							else if (hitChance <= LANCE_HIT) //if the r value is less than or equal to hit rate then hit
+							{
+								defendingUnit[0].health -= LANCE_DMG;
+							}
+						}
+						else if (activeUnit[0].weaponclass == magic)
+						{
+							cout << "hit value is: " << hitChance << endl;
+							if (hitChance > MAGIC_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+							{
+								;
+							}
+							else if (hitChance <= MAGIC_HIT) //if the r value is less than or equal to hit rate then hit
+							{
+								defendingUnit[0].health -= MAGIC_DMG;
+							}
+						}
+
+						//do game logic to determine new health for units
+
+						//add the zoom to game board then transition to battle scene instead of jump cuts
+						curcamPos = 1; //Set up the camera to move to the combat scene
+						moveCameraScene(); //make it so this function kicks off the battle scene animation
+						board.characters[i].position.x = board.characters[i].position.x - 1; //move a character so they are no longer overlapping with the enemy
+					}
 				}
 			}
-			
 			
 		} //end loop through all character on board
 

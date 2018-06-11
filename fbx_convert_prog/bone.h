@@ -99,7 +99,7 @@ public:
 			//cout << "t is : " << t << endl;
 			//cout << "fframe is : " << fframe << endl;
 			if (t > 0.9f && (fframe >= animation[animationnum]->keyframes.size() - 10)) { // interpolates into the last 10 % of animation 1 into frame 0 of animation 2
-				cout << "HERE MOTHER " << endl;
+				//cout << "HERE MOTHER " << endl;
 				qc = animation[animation2num]->keyframes[0].quaternion;
 				qd = animation[animation2num]->keyframes[0].quaternion;
 			}
