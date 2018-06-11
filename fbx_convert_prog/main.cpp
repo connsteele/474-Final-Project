@@ -1457,7 +1457,8 @@ public:
 		{
 			//overhead orientation
 			//mycam.pos = glm::vec3(-0.75, -10, -9);
-			mycam.pos = glm::vec3(-0.75, -8.5, -8);
+			//mycam.pos = glm::vec3(-0.75, -8.5, -8);
+			mycam.pos = glm::vec3(-0.75, -8.5, -7);
 			mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
 			mycam.rot.y = 0;
 			//curcamPos = 1; //switch for next press
