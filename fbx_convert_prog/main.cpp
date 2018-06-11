@@ -33,7 +33,7 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 //combat logic
 #define SWORD_HIT 0.90
 #define SWORD_DMG 2
-#define AXE_HIT 0.75
+#define AXE_HIT 0.70
 #define AXE_DMG 2
 #define LANCE_HIT 0.80
 #define LANCE_DMG 3
@@ -1427,6 +1427,7 @@ public:
 
 	}
 
+
 	void updateHUDteams(int team, float frametime) //0 for off, 1 for team 1 hud, 2 for team 2 hud
 	{
 
@@ -2392,6 +2393,7 @@ public:
 
 			}
 
+			
 			//Check to see if any characters are overlapping, theres probably a more efficent way to do this
 			if (activeUnit[0].isCharacter == 1)
 			{
@@ -2407,21 +2409,21 @@ public:
 						{
 							break;
 						}
+						float hitChance = static_cast <float> (rand()) / static_cast <float> (RAND_MAX); //get a random number between 0.0 and 1.0 for hitrate
 
 						////check what what weapon type is attacking the defending Unit to do damage calculations
-
-						float hitChance = static_cast <float> (rand()) / static_cast <float> (RAND_MAX); //get a random number between 0.0 and 1.0
-
 						if (activeUnit[0].weaponclass == sword)
 						{
 							cout << "hit value is: " << hitChance << endl;
 							if (hitChance > SWORD_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
 							{
-								;
+								//break; //dont go to combat!
 							}
 							else if (hitChance <= SWORD_HIT) //if the r value is less than or equal to hit rate then hit
 							{
 								defendingUnit[0].health -= SWORD_DMG;
+								curcamPos = 1; //Set up the camera to move to the combat scene
+								moveCameraScene(); //make it so this function kicks off the battle scene animation
 							}
 						}
 						else if (activeUnit[0].weaponclass == axe)
@@ -2429,11 +2431,13 @@ public:
 							cout << "hit value is: " << hitChance << endl;
 							if (hitChance > AXE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
 							{
-								;
+								//break; //dont go to combat!
 							}
 							else if (hitChance <= AXE_HIT) //if the r value is less than or equal to hit rate then hit
 							{
 								defendingUnit[0].health -= AXE_DMG;
+								curcamPos = 1; //Set up the camera to move to the combat scene
+								moveCameraScene(); //make it so this function kicks off the battle scene animation
 							}
 						}
 						else if (activeUnit[0].weaponclass == spear)
@@ -2441,11 +2445,13 @@ public:
 							cout << "hit value is: " << hitChance << endl;
 							if (hitChance > LANCE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
 							{
-								;
+								//break; //dont go to combat!
 							}
 							else if (hitChance <= LANCE_HIT) //if the r value is less than or equal to hit rate then hit
 							{
 								defendingUnit[0].health -= LANCE_DMG;
+								curcamPos = 1; //Set up the camera to move to the combat scene
+								moveCameraScene(); //make it so this function kicks off the battle scene animation
 							}
 						}
 						else if (activeUnit[0].weaponclass == magic)
@@ -2453,20 +2459,20 @@ public:
 							cout << "hit value is: " << hitChance << endl;
 							if (hitChance > MAGIC_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
 							{
-								;
+								//break; //dont go to combat!
 							}
 							else if (hitChance <= MAGIC_HIT) //if the r value is less than or equal to hit rate then hit
 							{
 								defendingUnit[0].health -= MAGIC_DMG;
+								curcamPos = 1; //Set up the camera to move to the combat scene
+								moveCameraScene(); //make it so this function kicks off the battle scene animation
 							}
 						}
 
-						//do game logic to determine new health for units
 
-						//add the zoom to game board then transition to battle scene instead of jump cuts
-						curcamPos = 1; //Set up the camera to move to the combat scene
-						moveCameraScene(); //make it so this function kicks off the battle scene animation
-						board.characters[i].position.x = board.characters[i].position.x - 1; //move a character so they are no longer overlapping with the enemy
+						//add the zoom to game board then transition to battle scene instead of jump cuts, ONLY IF EXTRA TIME
+						//move a character so they are no longer overlapping with the enemy
+						defendingUnit[0].position.x = defendingUnit[0].position.x - 1;
 					}
 				}
 			}
