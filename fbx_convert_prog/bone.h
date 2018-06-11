@@ -99,7 +99,7 @@ public:
 			//cout << "t is : " << t << endl;
 			//cout << "fframe is : " << fframe << endl;
 			if (t > 0.9f && (fframe >= animation[animationnum]->keyframes.size() - 10)) { // interpolates into the last 10 % of animation 1 into frame 0 of animation 2
-				cout << "HERE MOTHER " << endl;
+				//cout << "HERE MOTHER " << endl;
 				qc = animation[animation2num]->keyframes[0].quaternion;
 				qd = animation[animation2num]->keyframes[0].quaternion;
 			}
@@ -114,9 +114,13 @@ public:
 			vec3 tf = mix(tr, te, f);
 
 
-			if (f) {
+			if (f > 0) {
 				tf = animation[animationnum]->keyframes[mysize].translation;
 			}
+
+            if (name == "BVH:reference") {
+                tf = vec3(0, 0, 0);
+            }
 
 			mat4 M = mat4(qf);
 			mat4 T = translate(mat4(1), tf);
@@ -159,7 +163,7 @@ public:
 			kids[i]->write_to_VBOs(endp, vpos, imat);
 		}
 	//searches for the correct animations as well as sets the correct element from the animation matrix array
-	void set_animations(all_animations *all_anim,mat4 *matrices,int &animsize)
+	void set_animations(all_animations *all_anim, mat4 *matrices,int &animsize)
 		{
 		for (int ii = 0; ii < all_anim->animations.size(); ii++)
 			if (all_anim->animations[ii].bone == name)

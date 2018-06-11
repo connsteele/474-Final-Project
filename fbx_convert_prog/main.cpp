@@ -216,7 +216,9 @@ public:
 	
 	//animation matrices:
 	mat4 animmat[200];
-	int animmatsize=0;
+    mat4 animmat2[200];
+	int animmatsize = 0;
+    int animmatsize2 = 0;
 
 	//Current camera pos 
 	int curcamPos = 0; //init to 1 so first keypress works, if set to 0 2x key presses to work
@@ -493,9 +495,11 @@ public:
 	}
 
 	/*Note that any gl calls must always happen after a GL state is initialized */
-	bone *root = NULL;
+    bone *root = NULL;
+    bone *root2 = NULL;
 	int size_stick = 0;
 	all_animations all_animation;
+    all_animations all_animation2;
 	void initGeom(const std::string& resourceDirectory)
 	{
         PlaySound(TEXT("../resources/nge-thanatos.wav"), NULL, SND_FILENAME | SND_ASYNC);
@@ -515,17 +519,27 @@ public:
         brick->resize();
         brick->init();
 
-		for (int ii = 0; ii < 200; ii++)
-			animmat[ii] = mat4(1);
+        for (int ii = 0; ii < 200; ii++) {
+            animmat[ii] = mat4(1);
+            animmat2[ii] = mat4(1);
+        }
+			
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
 		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root); //82 frames
 		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, NULL);  //92 frames
 		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, NULL);  
 		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, NULL);  
-		
-		root->set_animations(&all_animation,animmat,animmatsize);
 
+        readtobone("fbxAnimations/run_Char00.fbx", &all_animation2, &root2); //82 frames
+        readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation2, NULL);  //92 frames
+        readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation2, NULL);
+        readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation2, NULL);
+		
+       
+		root->set_animations(&all_animation, animmat, animmatsize);
+        root2->set_animations(&all_animation2, animmat2, animmatsize2);
+        
 		cout << "root name " << root->name << endl;
 
 		// Initialize the Camera Position and orientation
@@ -557,6 +571,7 @@ public:
 		vector<vec3> pos;
 		vector<unsigned int> imat;
 		root->write_to_VBOs(vec3(0, 0, 0), pos, imat);
+        root2->write_to_VBOs(vec3(0, 0, 0), pos, imat);
 		size_stick = pos.size();
 		//actually memcopy the data - only do this once
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*pos.size(), pos.data(), GL_DYNAMIC_DRAW);
@@ -1046,6 +1061,8 @@ public:
         int mapHeight = 10;
         vector<vec3> mapBlocks;
         vector<vector<Character>> charPos(mapWidth, vector<Character>(mapHeight));
+
+        // for character positions
         for (int i = 0; i < mapWidth; i++) {
             for (int j = 0; j < mapHeight; j++) {
                 vec3 blockPos = vec3(i, 0, j) - vec3(mapWidth / 2, 0 , mapHeight / 2);
@@ -1053,6 +1070,7 @@ public:
             }
         }
 
+        // for rendering different textures
         for (int i = 0; i < 10; i++)
         {
             for (int j = 0; j < 10; j++)
@@ -1277,7 +1295,6 @@ public:
 		magicUnits->addUniform("team");
 		magicUnits->addUniform("activeUnit");
 
-
 		// skybox shader //
 		psky = std::make_shared<Program>();
 		psky->setVerbose(true);
@@ -1346,7 +1363,6 @@ public:
 	double overheadZoomLevel = 0;
 	void zoomCamera() //Pressing T will set a boolean so this gets called in the render function
 	{
-
 		if (curcamPos == 0) //only do zoom when in the overhead pos
 		{
 			overheadZoomLevel += .1;
@@ -1359,11 +1375,9 @@ public:
 			{
 				zoomCam = FALSE; //stop zooming
 			}
-			mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
+			mycam.rot.x = 1; // Camera orientation, 1 will look nearly straight down
 			mycam.rot.y = 0;
-
 		}
-
 	}
 
 	void updateHUDteams(int team, float frametime) //0 for off, 1 for team 1 hud, 2 for team 2 hud
@@ -1402,8 +1416,6 @@ public:
 				boolTeamHUD = 0; //turn off the update when the billboard moves so far
 			}
 		}
-
-		
 	}
 
 	void moveCameraScene() //calling this function alters the current camera scene, same functionality as pressing R
@@ -1417,10 +1429,6 @@ public:
 			mycam.rot.x = 1; // Camera orientaion, 1 will look nearly straight down
 			mycam.rot.y = 0;
 			//curcamPos = 1; //switch for next press
-
-			
-			
-
 		}
 		if (curcamPos == 1)
 		{
@@ -1604,13 +1612,16 @@ public:
 
 		static int anim_num = 0;
 
-		for (int ii = 0; ii < 200; ii++)
-			animmat[ii] = mat4(1);
-
+        for (int ii = 0; ii < 200; ii++) {
+            animmat[ii] = mat4(1);
+            animmat2[ii] = mat4(1);
+        }
 
 		//animation frame system
 		int keyframe_length = root->animation[anim_num]->keyframes.size();
+        int keyframe_length2 = root2->animation[anim_num]->keyframes.size();
 		int ms_length = root->animation[anim_num]->duration;
+        int ms_length2 = root2->animation[anim_num]->duration;
 		int anim_step_width_ms = ms_length / keyframe_length;
 		static float frame = 0;  
 		static float play_anim_t = 0; // interpolation value between 2 different animations
@@ -1640,6 +1651,23 @@ public:
 			}
 
 		}
+
+        if (!root2->myplayanimation(frame, 0, 3, play_anim_t))
+        {
+            totaltime_untilframe_ms = 0;
+            frame = 0;
+            framezerocount++;
+            anim_num++; //go from animation 0 to 1
+
+            if (anim_num > 1)
+            {
+                curcamPos = 0; //update the camera to move to the overhead scene
+                moveCameraScene(); //move the camera back after combat is over
+                play_anim_t = 0;
+                anim_num = 0; //reset the animation loop for the next time combat begins, exception will be thrown if this line is not here
+            }
+
+        }
 
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
@@ -1761,12 +1789,11 @@ public:
 		S = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)); //scale the bones
 		M = TransBones * rotXBones* S;
 		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
+		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat2[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick - 4);
 
 		bonesprog->unbind();
-		
-
+		    
 		//Draw the billboards that have the background textures on them for the combat scene
 		billboards->bind();
 		glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -1944,8 +1971,6 @@ public:
             brick->draw(bricks, FALSE);
         }
 
-
-        
         bricks->unbind();
 
 		//-- draw gui and hud elements --//
