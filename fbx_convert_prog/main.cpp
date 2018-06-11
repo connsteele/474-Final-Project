@@ -2072,17 +2072,21 @@ public:
 		//glm::mat4 rotMtns = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //axis to apply rotation to
 
 
-		//-- Draw the new animated sprites based on Weapon class --//
-		//check to see if any of the units have 0 health, if they do remove themfrom the gameboard
-		
+
+		//-- Draw the new animated sprites based on Weapon class --//		
 		teamSumMoves = 0; //recompute the total number of moves on the team each render loop
 		for (int i = 0; i < board.characters.size(); i++) //Check every character on the game board
 		{
 			
+			//check to see if any of the units have 0 health, if they do set their status as a living character to false
+			if (board.characters[i].health <= 0)
+			{
+				board.characters[i].isCharacter = 0;
+			}
+
 			glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + vec3(0, 0, 0)); //draw all the sprites
 
 			//draw the health for all units
-			//draw the movement for the current active unit
 			billboards->bind();
 			glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]); //send p and v matrices to the shader
 			glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
@@ -2115,7 +2119,7 @@ public:
 				teamSumMoves += board.characters[i].moves;
 			}
 			//draw each weapon class
-			if (board.characters[i].weaponclass == sword) //draw sword units to the board
+			if ((board.characters[i].weaponclass == sword)  && (board.characters[i].isCharacter == 1)) //draw sword units to the board
 			{
 				swordUnits->bind();
 				glUniformMatrix4fv(swordUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -2174,7 +2178,7 @@ public:
 
 				swordUnits->unbind();
 			}
-			if (board.characters[i].weaponclass == spear) //Draw Spear Units to the board
+			if ((board.characters[i].weaponclass == spear) && (board.characters[i].isCharacter == 1)) //Draw Spear Units to the board
 			{
 				spearUnits->bind();
 				glUniformMatrix4fv(spearUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -2229,7 +2233,7 @@ public:
 				spearUnits->unbind();
 
 			}
-			if (board.characters[i].weaponclass == axe)
+			if ((board.characters[i].weaponclass == axe) && (board.characters[i].isCharacter == 1))
 			{
 				axeUnits->bind();
 				glUniformMatrix4fv(axeUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -2288,7 +2292,7 @@ public:
 				axeUnits->unbind();
 
 			}
-			if (board.characters[i].weaponclass == magic)
+			if ((board.characters[i].weaponclass == magic) && (board.characters[i].isCharacter == 1))
 			{
 				magicUnits->bind();
 				glUniformMatrix4fv(magicUnits->getUniform("P"), 1, GL_FALSE, &P[0][0]);
@@ -2350,76 +2354,78 @@ public:
 			}
 
 			//Check to see if any characters are overlapping, theres probably a more efficent way to do this
-			for (int j = 0; j < board.characters.size(); j++)
+			if (activeUnit[0].isCharacter == 1)
 			{
-				//Check if units have the same postion and are on different teams
-				if ( (board.characters[i].position == board.characters[j].position) && (board.characters[i].team != board.characters[j].team) )
-				   //( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
+				for (int j = 0; j < board.characters.size(); j++)
 				{
-					Character* defendingUnit = &board.characters[j];
-
-					////check what what weapon type is attacking the defending Unit to do damage calculations
-					
-					float hitChance = static_cast <float> (rand()) / static_cast <float> (RAND_MAX); //get a random number between 0.0 and 1.0
-
-					if (activeUnit[0].weaponclass == sword)
+					//Check if units have the same postion and are on different teams
+					if ((activeUnit[0].position == board.characters[j].position) && (activeUnit[0].team != board.characters[j].team))
+						//( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
 					{
-						cout << "hit value is: " << hitChance << endl;
-						if (hitChance > SWORD_HIT ) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
-						{
-							;
-						}
-						else if (hitChance <= SWORD_HIT) //if the r value is less than or equal to hit rate then hit
-						{
-							defendingUnit[0].health -= SWORD_DMG;
-						}
-					}
-					else if (activeUnit[0].weaponclass == axe)
-					{
-						cout << "hit value is: " << hitChance << endl;
-						if (hitChance > AXE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
-						{
-							;
-						}
-						else if (hitChance <= AXE_HIT) //if the r value is less than or equal to hit rate then hit
-						{
-							defendingUnit[0].health -= AXE_DMG;
-						}
-					}
-					else if (activeUnit[0].weaponclass == spear)
-					{
-						cout << "hit value is: " << hitChance << endl;
-						if (hitChance > LANCE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
-						{
-							;
-						}
-						else if (hitChance <= LANCE_HIT) //if the r value is less than or equal to hit rate then hit
-						{
-							defendingUnit[0].health -= LANCE_DMG;
-						}
-					}
-					else if (activeUnit[0].weaponclass == magic)
-					{
-						cout << "hit value is: " << hitChance << endl;
-						if (hitChance > MAGIC_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
-						{
-							;
-						}
-						else if (hitChance <= MAGIC_HIT) //if the r value is less than or equal to hit rate then hit
-						{
-							defendingUnit[0].health -= MAGIC_DMG;
-						}
-					}
+						Character* defendingUnit = &board.characters[j];
 
-					//do game logic to determine new health for units
+						////check what what weapon type is attacking the defending Unit to do damage calculations
 
-					//add the zoom to game board then transition to battle scene instead of jump cuts
-					curcamPos = 1; //Set up the camera to move to the combat scene
-					moveCameraScene(); //make it so this function kicks off the battle scene animation
-					board.characters[i].position.x = board.characters[i].position.x - 1; //move a character so they are no longer overlapping with the enemy
+						float hitChance = static_cast <float> (rand()) / static_cast <float> (RAND_MAX); //get a random number between 0.0 and 1.0
+
+						if (activeUnit[0].weaponclass == sword)
+						{
+							cout << "hit value is: " << hitChance << endl;
+							if (hitChance > SWORD_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+							{
+								;
+							}
+							else if (hitChance <= SWORD_HIT) //if the r value is less than or equal to hit rate then hit
+							{
+								defendingUnit[0].health -= SWORD_DMG;
+							}
+						}
+						else if (activeUnit[0].weaponclass == axe)
+						{
+							cout << "hit value is: " << hitChance << endl;
+							if (hitChance > AXE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+							{
+								;
+							}
+							else if (hitChance <= AXE_HIT) //if the r value is less than or equal to hit rate then hit
+							{
+								defendingUnit[0].health -= AXE_DMG;
+							}
+						}
+						else if (activeUnit[0].weaponclass == spear)
+						{
+							cout << "hit value is: " << hitChance << endl;
+							if (hitChance > LANCE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+							{
+								;
+							}
+							else if (hitChance <= LANCE_HIT) //if the r value is less than or equal to hit rate then hit
+							{
+								defendingUnit[0].health -= LANCE_DMG;
+							}
+						}
+						else if (activeUnit[0].weaponclass == magic)
+						{
+							cout << "hit value is: " << hitChance << endl;
+							if (hitChance > MAGIC_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+							{
+								;
+							}
+							else if (hitChance <= MAGIC_HIT) //if the r value is less than or equal to hit rate then hit
+							{
+								defendingUnit[0].health -= MAGIC_DMG;
+							}
+						}
+
+						//do game logic to determine new health for units
+
+						//add the zoom to game board then transition to battle scene instead of jump cuts
+						curcamPos = 1; //Set up the camera to move to the combat scene
+						moveCameraScene(); //make it so this function kicks off the battle scene animation
+						board.characters[i].position.x = board.characters[i].position.x - 1; //move a character so they are no longer overlapping with the enemy
+					}
 				}
 			}
-			
 			
 		} //end loop through all character on board
 
