@@ -70,7 +70,7 @@ public:
 		}
 
 
-	bool myplayanimation(float keyframenumber, int animationnum, int animation2num, float f) {
+	bool myplayanimation(float keyframenumber, int animationnum, int animation2num, float f, mat4 * swordMat) {
 		float ratio = 1. * animation[animationnum]->keyframes.size() / animation[animation2num]->keyframes.size();
 		if (animation[animationnum]->keyframes.size() - 1 > keyframenumber)
 		{
@@ -129,9 +129,13 @@ public:
 				*mat = parentmat * M;
 			}
 
+			if (name == "RightHand") {
+				*swordMat = M;
+			}
+
 
 			for (int i = 0; i < kids.size(); i++) {
-				if (!kids[i]->myplayanimation(keyframenumber, animationnum, animation2num, f))
+				if (!kids[i]->myplayanimation(keyframenumber, animationnum, animation2num, f, swordMat))
 					reset = false;
 			}
 			return reset;

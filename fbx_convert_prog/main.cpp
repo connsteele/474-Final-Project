@@ -47,6 +47,7 @@ using namespace glm;
 shared_ptr<Shape> shape;
 shared_ptr<Shape> plane;
 shared_ptr<Shape> brick;
+shared_ptr<Shape> Realsword;
 
 //temp vars to move char
 static double moveCharX = 0;
@@ -439,7 +440,7 @@ public:
         if (key == GLFW_KEY_M && action == GLFW_PRESS)  // toggle between the two songs
         {
             //PlaySound(NULL, NULL, SND_ASYNC);
-            cout << "Switching Songs\n";
+         //   cout << "Switching Songs\n";
             if (playingSong1 && !playingSong2) {
                 playingSong1 = false;
                 playingSong2 = true;
@@ -481,14 +482,14 @@ public:
 		if (action == GLFW_PRESS)
 		{
 			glfwGetCursorPos(window, &posX, &posY);
-			std::cout << "Pos X " << posX <<  " Pos Y " << posY << std::endl;
+			//std::cout << "Pos X " << posX <<  " Pos Y " << posY << std::endl;
 
 			//change this to be the points converted to WORLD
 			//THIS IS BROKEN< YOU GET TO FIX IT - yay!
 			newPt[0] = 0;
 			newPt[1] = 0;
 
-			std::cout << "converted:" << newPt[0] << " " << newPt[1] << std::endl;
+			//std::cout << "converted:" << newPt[0] << " " << newPt[1] << std::endl;
 			glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID);
 			//update the vertex array with the updated points
 			glBufferSubData(GL_ARRAY_BUFFER, sizeof(float)*6, sizeof(float)*2, newPt);
@@ -542,7 +543,7 @@ public:
 		
 		root->set_animations(&all_animation,animmat,animmatsize);
 
-		cout << "root name " << root->name << endl;
+		//cout << "root name " << root->name << endl;
 
 		// Initialize the Camera Position and orientation
 		moveCameraScene();
@@ -560,6 +561,11 @@ public:
 		plane->loadMesh(resourceDirectory + "/FA18.obj");
 		plane->resize();
 		plane->init();
+		
+		Realsword = make_shared<Shape>();
+		Realsword->loadMesh(resourceDirectory + "/RealSword.obj");
+		Realsword->resize();
+		Realsword->init();
 
 		//generate the VAO
 		glGenVertexArrays(1, &VertexArrayID);
@@ -971,7 +977,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataLayout);
         glGenerateMipmap(GL_TEXTURE_2D);
-        cout << "Loaded " << str << endl;
+       // cout << "Loaded " << str << endl;
 
         str = resourceDirectory + "/TexTerrain/GrassTextureA.png";
         strcpy(filepath, str.c_str());
@@ -985,7 +991,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1); // errors out?
         glGenerateMipmap(GL_TEXTURE_2D);
-        cout << "Loaded " << str << endl;
+     //   cout << "Loaded " << str << endl;
 
         str = resourceDirectory + "/TexTerrain/GrassToRockyLeftTex.png";
         strcpy(filepath, str.c_str());
@@ -999,7 +1005,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
         glGenerateMipmap(GL_TEXTURE_2D);
-        cout << "Loaded " << str << endl;
+        //cout << "Loaded " << str << endl;
 
         str = resourceDirectory + "/TexTerrain/GrassToRockyRightTex.png";
         strcpy(filepath, str.c_str());
@@ -1013,7 +1019,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
         glGenerateMipmap(GL_TEXTURE_2D);
-        cout << "Loaded " << str << endl;
+      //  cout << "Loaded " << str << endl;
 
         str = resourceDirectory + "/TexTerrain/RockyTextureA.png";
         strcpy(filepath, str.c_str());
@@ -1027,7 +1033,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
         glGenerateMipmap(GL_TEXTURE_2D);
-        cout << "Loaded " << str << endl;
+       // cout << "Loaded " << str << endl;
 
         str = resourceDirectory + "/TexTerrain/SmallLakeTexture.png";
         strcpy(filepath, str.c_str());
@@ -1041,7 +1047,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
         glGenerateMipmap(GL_TEXTURE_2D);
-        cout << "Loaded " << str << endl;
+       // cout << "Loaded " << str << endl;
 
         str = resourceDirectory + "/TexTerrain/waterGrassHorizontalTex.png";
         strcpy(filepath, str.c_str());
@@ -1055,7 +1061,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
         glGenerateMipmap(GL_TEXTURE_2D);
-        cout << "Loaded " << str << endl;
+        //cout << "Loaded " << str << endl;
 
         str = resourceDirectory + "/TexTerrain/WaterGrassSwitchLeftTex.png";
         strcpy(filepath, str.c_str());
@@ -1069,7 +1075,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
         glGenerateMipmap(GL_TEXTURE_2D);
-        cout << "Loaded " << str << endl;
+       // cout << "Loaded " << str << endl;
 
         str = resourceDirectory + "/TexTerrain/WaterGrassSwitchRightTex.png";
         strcpy(filepath, str.c_str());
@@ -1083,7 +1089,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
         glGenerateMipmap(GL_TEXTURE_2D);
-        cout << "Loaded " << str << endl;
+      //  cout << "Loaded " << str << endl;
 
         //Tex1Location = glGetUniformLocation(bricks->pid, "tex1");//tex, tex2... sampler in the fragment shader
         //Tex2Location = glGetUniformLocation(bricks->pid, "tex2");
@@ -1242,6 +1248,8 @@ public:
 		bonesprog->addUniform("campos");
 		bonesprog->addAttribute("vertPos");
 		bonesprog->addAttribute("vertimat");
+		bonesprog->addAttribute("vertNor");
+		bonesprog->addAttribute("vertTex");
 
 		//// UNIT SHADERS ////
 		//Sword Unit Sprite Shader
@@ -1506,12 +1514,12 @@ public:
 
 		if (team1sum == 0) {
 			/*DISPLAY VICTORY SCREEN*/
-			cout << "TEAM1 sum = 0" << endl;
+			//cout << "TEAM1 sum = 0" << endl;
 			return 1;
 
 		}
 		else if (team2sum == 0) {
-			cout << "TEAM2 sum = 0" << endl;
+			//cout << "TEAM2 sum = 0" << endl;
 			return 2;
 		}
 
@@ -1693,6 +1701,8 @@ public:
 		float updateX = 1. / 5.;
 		float updateY = 1. / 7.;
 
+		mat4 *swordMat = &mat4(1);
+
 		//Things to setup on the first loop of render
 		if (firstLoop == 0)
 		{
@@ -1748,7 +1758,7 @@ public:
 			frame += (30.f * frametime);
 		}
 		//if (frame > keyframe_length)  //Catch the end of the current animation
-		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t))
+		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t, swordMat))
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
@@ -1764,7 +1774,9 @@ public:
 			}
 
 		}
-
+		if (*swordMat == mat4(1)) {
+			cout << "SWORD MAT NOT UPDATED" << endl;
+		}
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
 		//root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
@@ -1838,13 +1850,14 @@ public:
 		//M = TransPlane*anim*RotateXPlane;
 
 		//pplane->bind();
+		//M = *swordMat;
 		//glUniformMatrix4fv(pplane->getUniform("P"), 1, GL_FALSE, &P[0][0]);
 		//glUniformMatrix4fv(pplane->getUniform("V"), 1, GL_FALSE, &V[0][0]);
 		//glUniformMatrix4fv(pplane->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		//glUniform3fv(pplane->getUniform("campos"), 1, &mycam.pos[0]);
 		//glActiveTexture(GL_TEXTURE0);
 		//glBindTexture(GL_TEXTURE_2D, Texture2);
-		////plane->draw(pplane, false);			//render!!!!!!!
+		//Realsword->draw(pplane, false);			//render!!!!!!!
 		//pplane->unbind();
 
 
@@ -1886,10 +1899,17 @@ public:
 		M = TransBones * rotXBones* S;
 		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
-		glDrawArrays(GL_LINES, 4, size_stick - 4);
+		glDrawArrays(GL_LINES, 4, size_stick - 4);	
+
+		S = glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f)); //scale the bones
+		TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
+		sangle = -3.1415926 / 2.;
+		rotXBones = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //rotate the bones
+		M = *swordMat * TransBones * rotXBones* S;
+		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		Realsword->draw(bonesprog, false);
 
 		bonesprog->unbind();
-		
 
 		//Draw the billboards that have the background textures on them for the combat scene
 		billboards->bind();
@@ -1930,6 +1950,7 @@ public:
 			glUniformMatrix4fv(bricks->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 			brick->draw(bricks, FALSE);
 		}
+	
 		bricks->unbind();
         
 
@@ -2437,7 +2458,7 @@ public:
 
 						if (activeUnit[0].weaponclass == sword)
 						{
-							cout << "hit value is: " << hitChance << endl;
+							//cout << "hit value is: " << hitChance << endl;
 							if (hitChance > SWORD_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
 							{
 								;
@@ -2449,7 +2470,7 @@ public:
 						}
 						else if (activeUnit[0].weaponclass == axe)
 						{
-							cout << "hit value is: " << hitChance << endl;
+							//cout << "hit value is: " << hitChance << endl;
 							if (hitChance > AXE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
 							{
 								;
@@ -2461,7 +2482,7 @@ public:
 						}
 						else if (activeUnit[0].weaponclass == spear)
 						{
-							cout << "hit value is: " << hitChance << endl;
+							//cout << "hit value is: " << hitChance << endl;
 							if (hitChance > LANCE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
 							{
 								;
@@ -2473,7 +2494,7 @@ public:
 						}
 						else if (activeUnit[0].weaponclass == magic)
 						{
-							cout << "hit value is: " << hitChance << endl;
+							//cout << "hit value is: " << hitChance << endl;
 							if (hitChance > MAGIC_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
 							{
 								;
