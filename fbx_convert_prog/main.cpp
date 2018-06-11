@@ -34,6 +34,7 @@ using namespace glm;
 shared_ptr<Shape> shape;
 shared_ptr<Shape> plane;
 shared_ptr<Shape> brick;
+shared_ptr<Shape> head;
 
 //temp vars to move char
 static double moveCharX = 0;
@@ -199,7 +200,7 @@ public:
 	GLuint VertexArrayID, BillboardVAOID;
 
 	// Data necessary to give our box to OpenGL
-	GLuint VertexBufferID, VertexBufferIDimat, VertexNormDBox, VertexTexBox, IndexBufferIDBox;
+	GLuint VertexBufferID, VertexBufferIDimat, VertexNormDBox, VertexTexBox, IndexBufferIDBox, VertexBufferID2, VertexBufferID2imat;
     GLuint BillboardVertexBufferID, BillboardNormBufferID, BillboardTexBufferID, BillboardIndexBufferID;
 	GLuint swrdVertexBufferID, swrdNormBufferID, swrdTexBufferID, swrdIndexBufferID;
 
@@ -530,15 +531,15 @@ public:
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
 		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root); //82 frames
-		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, &root);  //92 frames
-		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, &root);  
-		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, &root);  
+		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, NULL);  //92 frames
+		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, NULL);
+		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, NULL);
 		root->set_animations(&all_animation, animmat, animmatsize);
 
-		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root2); //82 frames
-		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, &root2); //82 frames*/
+		/*readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root2); //82 frames
+		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, NULL); //82 frames
 
-		root2->set_animations(&all_animation2, animmat2, animmat2size);
+		root2->set_animations(&all_animation2, animmat2, animmat2size);*/
 
 
 		// Initialize the Camera Position and orientation
@@ -558,6 +559,12 @@ public:
 		plane->resize();
 		plane->init();
 
+		head = make_shared<Shape>();
+		head->loadMesh(resourceDirectory + "/HEADobj.obj");
+		head->resize();
+		head->init();
+
+
 		//generate the VAO
 		glGenVertexArrays(1, &VertexArrayID);
 		glBindVertexArray(VertexArrayID);
@@ -575,6 +582,7 @@ public:
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*pos.size(), pos.data(), GL_DYNAMIC_DRAW);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
 		//indices of matrix:
 		glGenBuffers(1, &VertexBufferIDimat);
 		glBindBuffer(GL_ARRAY_BUFFER, VertexBufferIDimat);
@@ -582,6 +590,25 @@ public:
 		glEnableVertexAttribArray(1);
 		glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 0, (void*)0);
 
+		//*****************SKELETON 2 ********************************************
+		/*glGenBuffers(1, &VertexBufferID2);
+		//set the current state to focus on our vertex buffer
+		glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID2);
+		
+		root2->write_to_VBOs(vec3(0, 0, 0), pos, imat);
+		size_stick = pos.size();
+		//actually memcopy the data - only do this once
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*pos.size(), pos.data(), GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		//indices of matrix:
+		glGenBuffers(1, &VertexBufferID2imat);
+		glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID2imat);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(uint)*imat.size(), imat.data(), GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(3);
+		glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, 0, (void*)0);*/
+		/**********************************************************************************/
         // billboard VAO and VBO
         glGenVertexArrays(1, &BillboardVAOID);
         glBindVertexArray(BillboardVAOID);
@@ -1192,6 +1219,7 @@ public:
 		bonesprog->addUniform("M");
 		bonesprog->addUniform("Manim");
 		bonesprog->addUniform("campos");
+		bonesprog->addUniform("myswitch");
 		bonesprog->addAttribute("vertPos");
 		bonesprog->addAttribute("vertimat");
 
@@ -1629,8 +1657,6 @@ public:
 		int anim_step_width_ms = ms_length / keyframe_length;
 		static float frame = 0;  
 		static float play_anim_t = 0; // interpolation value between 2 different animations
-		int num_animations = 2;
-		int framezerocount = 0;
 		
 		if ((totaltime_untilframe_ms >= anim_step_width_ms) && (curcamPos == 1)) //new condition, only update when you enter the combat sc
 		{
@@ -1638,13 +1664,11 @@ public:
 			//frame++;
 			frame += (30.f * frametime);
 		}
-		//if (frame > keyframe_length)  //Catch the end of the current animation
 		//if (!(root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t) && root2->myplayanimation(frame, RUN_ANIMATION, 1, play_anim_t)))
 		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t))
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
-			framezerocount++;
 			anim_num++; //go from animation 0 to 1
 
 			if (anim_num > 1) 
@@ -1656,11 +1680,6 @@ public:
 			}
 
 		}
-		
-
-		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
-		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
-		//root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
 		if (anim_num == AXE_SWING_ANIMATION && play_anim_t < 1) {
 			play_anim_t += frametime;
 		}
@@ -1767,6 +1786,7 @@ public:
 		glm::mat4 rotXBones = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //rotate the bones
 		glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)); //scale the bones
 		M = TransBones * rotXBones* S;
+		glUniform1i(bonesprog->getUniform("switch"), 1);
 		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick-4);
@@ -1777,6 +1797,7 @@ public:
 		rotXBones = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //rotate the bones
 		S = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)); //scale the bones
 		M = TransBones * rotXBones* S;
+		glUniform1i(bonesprog->getUniform("switch"), 0);
 		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick - 4);
