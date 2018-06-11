@@ -207,7 +207,7 @@ public:
     GLuint Texture, Texture1, Texture2, Texture3, bgmountains1;
 	GLuint TexHector, TexMarth;
 	GLuint swrdTex, spearTex, axeTex, magicTex;
-	GLuint guiTeam1Tex, guiTeam2Tex, guiCharMoves; //Gui textures
+	GLuint guiTeam1Tex, guiTeam2Tex, guiCharMoves, guiCharHealth; //Gui textures
     GLuint layoutTex, grass, grassToRockyLeft, grassToRockyRight, rocky, lake, waterCenter, waterLeft, waterRight;
 	//line
 	Line linerender;
@@ -811,6 +811,27 @@ public:
 		glUseProgram(billboards->pid);
 		glUniform1i(Tex1Location, 0);
 
+		//load in the character health texture
+		//guiCharMoves
+		str = resourceDirectory + "/charHealth.png";
+		strcpy(filepath, str.c_str());
+		data = stbi_load(filepath, &width, &height, &channels, 4);
+		glGenTextures(1, &guiCharHealth);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, guiCharHealth);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST); //Use nearest_nearest or linear_nearest
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		//One Texture HUD
+		//set the 1 textures to the correct samplers in the fragment shader:
+		Tex1Location = glGetUniformLocation(billboards->pid, "tex");//tex, tex2... sampler in the fragment shader
+		// Then bind the uniform samplers to texture units:
+		glUseProgram(billboards->pid);
+		glUniform1i(Tex1Location, 0);
 
 		//OLD SPRITE TEXTURES
 		//str = resourceDirectory + "/lyn.png"; // actually get the first sprite texture
@@ -1132,16 +1153,16 @@ public:
 		teamSumMoves = 100000; // just set this initial value so it doesnt switch turns on the first render loop, it gets recomputed on each render loop
 		//NEW UNITS
 		//Team 1
-		charPos.at(0).at(0) = Character("Sword Lord T1", default, sword, false, 25, swrdTex, 1, 3);
-		charPos.at(0).at(1) = Character("Spear Wielder T1", default, spear, false, 25, spearTex, 1, 3);
-		charPos.at(0).at(2) = Character("Axe Master T1", default, axe, false, 25, axeTex, 1, 3);
-		charPos.at(0).at(3) = Character("Mage Tactician T1", default, magic, false, 25, magicTex, 1, 2);
+		charPos.at(0).at(0) = Character("Sword Lord T1", default, sword, false, 5, swrdTex, 1, 3);
+		charPos.at(0).at(1) = Character("Spear Wielder T1", default, spear, false, 6, spearTex, 1, 3);
+		charPos.at(0).at(2) = Character("Axe Master T1", default, axe, false, 7, axeTex, 1, 3);
+		charPos.at(0).at(3) = Character("Mage Tactician T1", default, magic, false, 4, magicTex, 1, 2);
 
 		//Team 2
-		charPos.at(6).at(0) = Character("Sword Lord T2", default, sword, false, 25, swrdTex, 2, 3);
-		charPos.at(6).at(1) = Character("Spear Wielder T2", default, spear, false, 25, spearTex, 2, 3);
-		charPos.at(6).at(2) = Character("Axe Master T2", default, axe, false, 25, axeTex, 2, 3);
-		charPos.at(6).at(3) = Character("Mage Tactician T2", default, magic, false, 25, magicTex, 2, 2);
+		charPos.at(6).at(0) = Character("Sword Lord T2", default, sword, false, 5, swrdTex, 2, 3);
+		charPos.at(6).at(1) = Character("Spear Wielder T2", default, spear, false, 6, spearTex, 2, 3);
+		charPos.at(6).at(2) = Character("Axe Master T2", default, axe, false, 7, axeTex, 2, 3);
+		charPos.at(6).at(3) = Character("Mage Tactician T2", default, magic, false, 4, magicTex, 2, 2);
 
 		////OLD TEMP UNITS
   //      charPos.at(0).at(1) = Character("Lyn", default, spear, true, 20, Texture, 1);  // load the character spite textures
@@ -2043,7 +2064,29 @@ public:
 			glm::mat4 TransSprites = glm::translate(glm::mat4(1.0f), board.characters[i].position + vec3(0, 0, 0)); //draw all the sprites
 
 			//draw the health for all units
+			//draw the movement for the current active unit
+			billboards->bind();
+			glUniformMatrix4fv(billboards->getUniform("P"), 1, GL_FALSE, &P[0][0]); //send p and v matrices to the shader
+			glUniformMatrix4fv(billboards->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+			//do transformations and upload model matrix to shader
+			for (int ihealth = 0; ihealth <  board.characters[i].health; ihealth++)
+			{
+				TranstoMap = glm::translate(glm::mat4(1.0f), board.characters[i].position); //translate to the pos of the active character
+				TransPos = glm::translate(glm::mat4(1.0f), vec3(0, 1, -0.50)); //offset from character
+				glm::mat4 TperOffset = glm::translate(glm::mat4(1.0f), vec3(((0.25) * ihealth), 0, 0));
 
+				float rotAmount = -3.1415926 / 2; //the angle of roation, rotate 90 degress to face the camera
+				glm::mat4 RotHud = glm::rotate(glm::mat4(1.0f), rotAmount, glm::vec3(1, 0, 0)); //rotate the hud so it faces the cam, define what axis rotAmount works on
+				glm::mat4 scaleHud = glm::scale(glm::mat4(1.0f), glm::vec3(0.2));
+				M = TransPos * TranstoMap * TperOffset * RotHud * scaleHud; //model matrix, order of operations: T * R * S
+				glUniformMatrix4fv(billboards->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+				glBindVertexArray(BillboardVAOID);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, guiCharHealth); //bind a different texture
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0); //actually draw the billboard (has 6 verts)
+			}
+
+			billboards->unbind();
 			
 
 
