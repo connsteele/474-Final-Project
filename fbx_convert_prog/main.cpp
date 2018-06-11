@@ -1418,11 +1418,11 @@ public:
 		{
 			if (animateHudTeam2 > -6) //move team 2 hud out 
 			{
-				animateHudTeam2 -= (1.7 * frametime); //incrementally move the hud
+				animateHudTeam2 -= (6 * frametime); //incrementally move the hud
 			}
 			if (animateHudTeam1 < 3)
 			{
-				animateHudTeam1 += (1.7 * frametime ); //incrementally move the hud
+				animateHudTeam1 += (6 * frametime ); //incrementally move the hud
 			}
 			else
 			{
@@ -1435,11 +1435,11 @@ public:
 			//cout << "HIT TEAM 2" << endl;
 			if (animateHudTeam1 > -6) //move team one hud in
 			{
-				animateHudTeam1 -= (1.7 * frametime); //incrementally move the hud
+				animateHudTeam1 -= (6 * frametime); //incrementally move the hud
 			}
 			if (animateHudTeam2 < 3) //make this team2
 			{
-				animateHudTeam2 += (1.7 * frametime); //incrementally move the hud
+				animateHudTeam2 += (6 * frametime); //incrementally move the hud
 			}
 			else
 			{
