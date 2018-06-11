@@ -327,7 +327,7 @@ public:
 		//Active Unit Selection
 		if (key == GLFW_KEY_1 && action == GLFW_PRESS)
 		{
-			if (activeTeam == 1)
+			if (activeTeam == 1  && Nteam1.at(0)->isCharacter == 1)
 			{
 				activeUnit = Nteam1.at(0);
 				//upload the current activeUnit to the shader, need to find an efficent way to do this
@@ -335,7 +335,7 @@ public:
 
 				//activeUnit = &board.characters[0];
 			}
-			else if (activeTeam == 2)
+			else if (activeTeam == 2 && Nteam2.at(0)->isCharacter == 1)
 			{
 				activeUnit = Nteam2.at(0);
 				//activeUnit = &board.characters[0+4];
@@ -343,12 +343,12 @@ public:
 		}
 		if (key == GLFW_KEY_2 && action == GLFW_PRESS)
 		{
-			if (activeTeam == 1)
+			if (activeTeam == 1 && Nteam1.at(1)->isCharacter == 1)
 			{
 				activeUnit = Nteam1.at(1);
 				//activeUnit = &board.characters[1];
 			}
-			else if (activeTeam == 2)
+			else if (activeTeam == 2 && Nteam1.at(1)->isCharacter == 1)
 			{
 				activeUnit = Nteam2.at(1);
 				//activeUnit = &board.characters[1 + 4];
@@ -356,12 +356,12 @@ public:
 		}
 		if (key == GLFW_KEY_3 && action == GLFW_PRESS)
 		{
-			if (activeTeam == 1)
+			if (activeTeam == 1 && Nteam1.at(2)->isCharacter == 1)
 			{
 				activeUnit = Nteam1.at(2);
 				//activeUnit = &board.characters[2];
 			}
-			else if (activeTeam == 2)
+			else if (activeTeam == 2  && Nteam2.at(2)->isCharacter == 1)
 			{
 				activeUnit = Nteam2.at(2);
 				//activeUnit = &board.characters[2 + 4];
@@ -369,12 +369,12 @@ public:
 		}
 		if (key == GLFW_KEY_4 && action == GLFW_PRESS)
 		{
-			if (activeTeam == 1)
+			if (activeTeam == 1 && Nteam1.at(3)->isCharacter == 1)
 			{
 				activeUnit = Nteam1.at(3);
 				//activeUnit = &board.characters[3];
 			}
-			else if (activeTeam == 2)
+			else if (activeTeam == 2 && Nteam2.at(3)->isCharacter == 1)
 			{
 				activeUnit = Nteam2.at(3);
 				//activeUnit = &board.characters[3 + 4];
@@ -1505,7 +1505,19 @@ public:
 			{
 				teamEndTurn = 0;
 				activeTeam = 2;
-				activeUnit = Nteam2.at(0); //change the active unit
+
+				//check which units are still alive to set the active unit
+				//check which units are still alive to set the active unit
+				for (int ichar = 0; ichar < Nteam2.size(); ichar++)
+				{
+					if (Nteam2.at(ichar)->isCharacter == 1)
+					{
+						activeUnit = Nteam2.at(ichar); //change the active unit
+
+						break;
+					}
+				}
+				//activeUnit = Nteam2.at(0); //change the active unit
 
 				//reset the moves for all the new current team's units
 				for (int ii = 0; ii < Nteam2.size(); ii++)
@@ -1524,7 +1536,16 @@ public:
 			else if (teamSumMoves <= 0) // check if the sum of movements on this team is 0
 			{
 				activeTeam = 2;
-				activeUnit = Nteam2.at(0); //change the active unit
+				for (int ichar = 0; ichar < Nteam2.size(); ichar++)
+				{
+					if (Nteam2.at(ichar)->isCharacter == 1)
+					{
+						activeUnit = Nteam2.at(ichar); //change the active unit
+
+						break;
+					}
+				}
+				//activeUnit = Nteam2.at(0); //change the active unit
 
 				//reset the moves for all the new current team's units
 				for (int ii = 0; ii < Nteam2.size(); ii++)
@@ -1548,7 +1569,16 @@ public:
 			{
 				teamEndTurn = 0;
 				activeTeam = 1;
-				activeUnit = Nteam1.at(0); //change the active unit
+				for (int ichar = 0; ichar < Nteam1.size(); ichar++)
+				{
+					if (Nteam1.at(ichar)->isCharacter == 1)
+					{
+						activeUnit = Nteam1.at(ichar); //change the active unit
+
+						break;
+					}
+				}
+				//activeUnit = Nteam1.at(0); //change the active unit, OLD
 
 				//reset the moves for all the new current team's units
 				for (int ii = 0; ii < Nteam2.size(); ii++)
@@ -1566,7 +1596,16 @@ public:
 			else if (teamSumMoves <= 0) // check if the sum of movements on this team is 0 
 			{
 				activeTeam = 1;
-				activeUnit = Nteam1.at(0); //change the active unit
+				for (int ichar = 0; ichar < Nteam1.size(); ichar++)
+				{
+					if (Nteam1.at(ichar)->isCharacter == 1)
+					{
+						activeUnit = Nteam1.at(ichar); //change the active unit
+
+						break;
+					}
+				}
+				//activeUnit = Nteam1.at(0); //change the active unit OLD
 
 				//reset the moves for all the new current team's units
 				for (int ii = 0; ii < Nteam2.size(); ii++)
@@ -2363,6 +2402,11 @@ public:
 						//( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
 					{
 						Character* defendingUnit = &board.characters[j];
+
+						if (defendingUnit[0].isCharacter == 0) //break out and dont do anything if the defendingUnit is no longer alive
+						{
+							break;
+						}
 
 						////check what what weapon type is attacking the defending Unit to do damage calculations
 
