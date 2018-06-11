@@ -6,6 +6,8 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include <iostream>
 #include <glad/glad.h>
 #include <windows.h>
+#include <ctime> //random number generation
+#include <cstdlib> //random number generation
 #include <mmsystem.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -27,6 +29,17 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #define AXE_SWING_ANIMATION 1
 #define AXE_UNSHEATHE_ANIMATION 2
 #define DODGE_ANIMATION 3
+
+//combat logic
+#define SWORD_HIT 0.90
+#define SWORD_DMG 2
+#define AXE_HIT 0.75
+#define AXE_DMG 2
+#define LANCE_HIT 0.80
+#define LANCE_DMG 3
+#define MAGIC_HIT 0.95
+#define MAGIC_DMG 1
+
 
 using namespace std;
 using namespace glm;
@@ -503,6 +516,9 @@ public:
 		activeTeam = 1;
 		turnNumber = 0; //
 		teamEndTurn = 0; //set the initial turn not to end
+
+		//combat logic
+		srand(static_cast <unsigned> (time(0))); //get a truly random number for damage calculation, only do this once
 
 		//// Hud stuff ////
 		animateHudTeam1 = 0;
@@ -2340,8 +2356,60 @@ public:
 				if ( (board.characters[i].position == board.characters[j].position) && (board.characters[i].team != board.characters[j].team) )
 				   //( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
 				{
-					Character defendingUnit = board.characters[j];
+					Character* defendingUnit = &board.characters[j];
 
+					////check what what weapon type is attacking the defending Unit to do damage calculations
+					
+					float hitChance = static_cast <float> (rand()) / static_cast <float> (RAND_MAX); //get a random number between 0.0 and 1.0
+
+					if (activeUnit[0].weaponclass == sword)
+					{
+						cout << "hit value is: " << hitChance << endl;
+						if (hitChance > SWORD_HIT ) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+						{
+							;
+						}
+						else if (hitChance <= SWORD_HIT) //if the r value is less than or equal to hit rate then hit
+						{
+							defendingUnit[0].health -= SWORD_DMG;
+						}
+					}
+					else if (activeUnit[0].weaponclass == axe)
+					{
+						cout << "hit value is: " << hitChance << endl;
+						if (hitChance > AXE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+						{
+							;
+						}
+						else if (hitChance <= AXE_HIT) //if the r value is less than or equal to hit rate then hit
+						{
+							defendingUnit[0].health -= AXE_DMG;
+						}
+					}
+					else if (activeUnit[0].weaponclass == spear)
+					{
+						cout << "hit value is: " << hitChance << endl;
+						if (hitChance > LANCE_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+						{
+							;
+						}
+						else if (hitChance <= LANCE_HIT) //if the r value is less than or equal to hit rate then hit
+						{
+							defendingUnit[0].health -= LANCE_DMG;
+						}
+					}
+					else if (activeUnit[0].weaponclass == magic)
+					{
+						cout << "hit value is: " << hitChance << endl;
+						if (hitChance > MAGIC_HIT) //if the r value is higher than the hit rate (ie 97 > SWORD_HIT) then miss
+						{
+							;
+						}
+						else if (hitChance <= MAGIC_HIT) //if the r value is less than or equal to hit rate then hit
+						{
+							defendingUnit[0].health -= MAGIC_DMG;
+						}
+					}
 
 					//do game logic to determine new health for units
 
