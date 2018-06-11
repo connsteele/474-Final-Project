@@ -207,7 +207,7 @@ public:
 	WindowManager * windowManager = nullptr;
 
 	// Our shader program
-	std::shared_ptr<Program> bonesprog, psky, pplane, bricks, billboards, swordUnits, spearUnits, axeUnits, magicUnits;
+	std::shared_ptr<Program> bonesprog, psky, weaponShape, bricks, billboards, swordUnits, spearUnits, axeUnits, magicUnits;
 
 	// Contains vertex information for OpenGL
 	GLuint VertexArrayID, BillboardVAOID;
@@ -1364,22 +1364,22 @@ public:
 		psky->addAttribute("vertNor");
 		psky->addAttribute("vertTex");
 
-		//unused?
-		/*pplane = std::make_shared<Program>();
-		pplane->setVerbose(true);
-		pplane->setShaderNames(resourceDirectory + "/plane_vertex.glsl", resourceDirectory + "/plane_frag.glsl");
-		if (!pplane->init())
+		//repurpose to draw weapons
+		weaponShape = std::make_shared<Program>();
+		weaponShape->setVerbose(true);
+		weaponShape->setShaderNames(resourceDirectory + "/plane_vertex.glsl", resourceDirectory + "/plane_frag.glsl");
+		if (!weaponShape->init())
 			{
 			std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
 			exit(1);
 			}
-		pplane->addUniform("P");
-		pplane->addUniform("V");
-		pplane->addUniform("M");
-		pplane->addUniform("campos");
-		pplane->addAttribute("vertPos");
-		pplane->addAttribute("vertNor");
-		pplane->addAttribute("vertTex");*/
+		weaponShape->addUniform("P");
+		weaponShape->addUniform("V");
+		weaponShape->addUniform("M");
+		weaponShape->addUniform("campos");
+		weaponShape->addAttribute("vertPos");
+		weaponShape->addAttribute("vertNor");
+		weaponShape->addAttribute("vertTex");
 
 		//Terrain Shader
 		bricks = std::make_shared<Program>();
@@ -1702,6 +1702,7 @@ public:
 		float updateY = 1. / 7.;
 
 		mat4 *swordMat = &mat4(1);
+		mat4 RightSwordMat = mat4(1);
 
 		//Things to setup on the first loop of render
 		if (firstLoop == 0)
@@ -1758,7 +1759,7 @@ public:
 			frame += (30.f * frametime);
 		}
 		//if (frame > keyframe_length)  //Catch the end of the current animation
-		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t, swordMat))
+		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t, &RightSwordMat))
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
@@ -1774,7 +1775,7 @@ public:
 			}
 
 		}
-		if (*swordMat == mat4(1)) {
+		if (RightSwordMat == mat4(1)) {
 			cout << "SWORD MAT NOT UPDATED" << endl;
 		}
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
@@ -1900,16 +1901,19 @@ public:
 		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick - 4);	
+		bonesprog->unbind();
 
+		//draw the weapon in the right hand of the skeleton
+		weaponShape->bind();
 		S = glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f)); //scale the bones
 		TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
 		sangle = -3.1415926 / 2.;
 		rotXBones = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //rotate the bones
-		M = *swordMat * TransBones * rotXBones* S;
-		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-		Realsword->draw(bonesprog, false);
-
-		bonesprog->unbind();
+		M = (*swordMat) * TransBones * rotXBones* S; //swordMat is the pos of the hand
+		glUniformMatrix4fv(weaponShape->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		Realsword->draw(weaponShape, false);
+		weaponShape->unbind();
+		
 
 		//Draw the billboards that have the background textures on them for the combat scene
 		billboards->bind();

@@ -70,7 +70,7 @@ public:
 		}
 
 
-	bool myplayanimation(float keyframenumber, int animationnum, int animation2num, float f, mat4 * swordMat) {
+	bool myplayanimation(float keyframenumber, int animationnum, int animation2num, float f, mat4* swordMat) {
 		float ratio = 1. * animation[animationnum]->keyframes.size() / animation[animation2num]->keyframes.size();
 		if (animation[animationnum]->keyframes.size() - 1 > keyframenumber)
 		{
@@ -130,6 +130,7 @@ public:
 			}
 
 			if (name == "RightHand") {
+				//cout << "THIS HAPPENED" << endl;
 				*swordMat = M;
 			}
 
