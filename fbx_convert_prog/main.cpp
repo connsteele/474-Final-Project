@@ -1479,6 +1479,28 @@ public:
 		}
 	}
 
+	int updateVictory() {
+		Character *c;
+		int team1sum = 0;
+		int team2sum = 0;
+		for (int i = 0; i < Nteam1.size(); i ++) {
+			team1sum +=  Nteam1.at(i)->isCharacter;
+			team2sum += Nteam2.at(i)->isCharacter;
+		}
+
+		if (team1sum == 0) {
+			/*DISPLAY VICTORY SCREEN*/
+			cout << "TEAM1 sum = 0" << endl;
+			return 1;
+
+		}
+		else if (team2sum == 0) {
+			cout << "TEAM2 sum = 0" << endl;
+			return 2;
+		}
+
+	}
+
 	void updateTurn() //function that continously checks if all the 
 	{	
 		if (activeTeam == 1) //check if you want to end team 1's turn
@@ -1636,6 +1658,7 @@ public:
 
 		//// Game Logic Stuff ////
 		updateTurn(); //function to check if the turn should be changed
+		updateVictory();
 
 
 
