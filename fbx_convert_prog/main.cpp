@@ -942,7 +942,8 @@ public:
 
         // load map file
         //str = resourceDirectory + "/TexTerrain/map1.bmp";
-		str = resourceDirectory + "/TexTerrain/map2.bmp";
+		//str = resourceDirectory + "/TexTerrain/map2.bmp";
+		str = resourceDirectory + "/TexTerrain/map3bloodbath.bmp";
 		strcpy(filepath, str.c_str());
         dataLayout = stbi_load(filepath, &width, &height, &channels, 3);
         glGenTextures(1, &layoutTex);
