@@ -114,13 +114,13 @@ public:
 			vec3 tf = mix(tr, te, f);
 
 
-			if (f > 0) {
+			if (f) {
 				tf = animation[animationnum]->keyframes[mysize].translation;
 			}
 
-            if (name == "BVH:reference") {
+            /*if (name == "BVH:reference") {
                 tf = vec3(0, 0, 0);
-            }
+            }*/
 
 			mat4 M = mat4(qf);
 			mat4 T = translate(mat4(1), tf);

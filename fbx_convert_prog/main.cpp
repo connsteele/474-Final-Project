@@ -27,8 +27,12 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 
 #define RUN_ANIMATION 0
 #define AXE_SWING_ANIMATION 1
-#define AXE_UNSHEATHE_ANIMATION 2
-#define DODGE_ANIMATION 3
+#define DODGE_ANIMATION 2
+#define MAGIC_ANIMATION 3
+#define SWORD_ANIMATION 4
+#define SPEAR_ANIMATION 5
+
+
 
 //combat logic
 #define SWORD_HIT 0.90
@@ -543,15 +547,19 @@ public:
 		
 		//readtobone("test.fbx",&all_animation,&root);  // old load 
 		readtobone("fbxAnimations/run_Char00.fbx", &all_animation, &root); //82 frames
-		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, NULL);  //92 frames
-		readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation, NULL);  
-		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, NULL);  
+		readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation, NULL);  //92 frames 
+		readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation, NULL);
+		readtobone("fbxAnimations/magicAttackChar00.fbx", &all_animation, NULL);
+		readtobone("fbxAnimations/swordSwing_0Char00.fbx", &all_animation, NULL);
+		readtobone("fbxAnimations/spearSwing_Char00.fbx", &all_animation, NULL);
 
         readtobone("fbxAnimations/run_Char00.fbx", &all_animation2, &root2); //82 frames
         readtobone("fbxAnimations/axeSwing_1Char00.fbx", &all_animation2, NULL);  //92 frames
-        readtobone("fbxAnimations/axeUnsheatheChar00.fbx", &all_animation2, NULL);
         readtobone("fbxAnimations/dodgeChar00.fbx", &all_animation2, NULL);
-		
+		readtobone("fbxAnimations/magicAttackChar00.fbx", &all_animation2, NULL);
+		readtobone("fbxAnimations/swordSwing_0Char00.fbx", &all_animation2, NULL);
+		readtobone("fbxAnimations/spearSwing_Char00.fbx", &all_animation2, NULL);
+
        
 		root->set_animations(&all_animation, animmat, animmatsize);
         root2->set_animations(&all_animation2, animmat2, animmatsize2);
@@ -1730,6 +1738,23 @@ public:
 		int num_animations = 2;
 		int framezerocount = 0;
 		
+		/*************Character type stuff*******************/
+		int anim1, anim2;
+
+		if (activeUnit[0].weaponclass == sword) {
+			anim1 = SWORD_ANIMATION;
+		}
+		else if (activeUnit[0].weaponclass == axe) {
+			anim1 = AXE_SWING_ANIMATION;
+		}
+		else if (activeUnit[0].weaponclass == spear) {
+			anim1 = SPEAR_ANIMATION;
+		}
+		else if (activeUnit[0].weaponclass == magic) {
+			anim1 = MAGIC_ANIMATION;
+		}
+		anim2 = DODGE_ANIMATION;
+
 		if ((totaltime_untilframe_ms >= anim_step_width_ms) && (curcamPos == 1)) //new condition, only update when you enter the combat sc
 		{
 			totaltime_untilframe_ms = 0;
@@ -1737,7 +1762,7 @@ public:
 			frame += (30.f * frametime);
 		}
 		//if (frame > keyframe_length)  //Catch the end of the current animation
-		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t))
+		if (!root->myplayanimation(frame, RUN_ANIMATION, anim1, play_anim_t))
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
@@ -1754,7 +1779,7 @@ public:
 
 		}
 
-        if (!root2->myplayanimation(frame, 0, 3, play_anim_t))
+        if (!root2->myplayanimation(frame, RUN_ANIMATION, anim2, play_anim_t))
         {
             totaltime_untilframe_ms = 0;
             frame = 0;
@@ -1774,7 +1799,7 @@ public:
 		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
 		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
 		//root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
-		if (anim_num == AXE_SWING_ANIMATION && play_anim_t < 1) {
+		if (anim_num == 1 && play_anim_t < 1) {
 			play_anim_t += frametime;
 		}
 		else if (anim_num == RUN_ANIMATION && play_anim_t > 0) {
