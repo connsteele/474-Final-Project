@@ -1764,7 +1764,7 @@ public:
 		{
 			totaltime_untilframe_ms = 0;
 			//frame++;
-			frame += (30.f * frametime);
+			frame += (70.f * frametime); //animation playback speed
 		}
 		//if (frame > keyframe_length)  //Catch the end of the current animation
 		if (!root->myplayanimation(frame, RUN_ANIMATION, anim1, play_anim_t))  //right skeleton
