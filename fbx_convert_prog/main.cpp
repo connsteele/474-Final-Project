@@ -1380,6 +1380,7 @@ public:
 		weaponShape->addAttribute("vertPos");
 		weaponShape->addAttribute("vertNor");
 		weaponShape->addAttribute("vertTex");
+		weaponShape->addAttribute("vertimat");
 
 		//Terrain Shader
 		bricks = std::make_shared<Program>();
@@ -1701,7 +1702,7 @@ public:
 		float updateX = 1. / 5.;
 		float updateY = 1. / 7.;
 
-		mat4 *swordMat = &mat4(1);
+		//mat4 *swordMat = &mat4(1);
 		mat4 RightSwordMat = mat4(1);
 
 		//Things to setup on the first loop of render
@@ -1759,7 +1760,7 @@ public:
 			frame += (30.f * frametime);
 		}
 		//if (frame > keyframe_length)  //Catch the end of the current animation
-		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t, &RightSwordMat))
+		if (!root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t, RightSwordMat))
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
@@ -1905,12 +1906,21 @@ public:
 
 		//draw the weapon in the right hand of the skeleton
 		weaponShape->bind();
+		glUniformMatrix4fv(weaponShape->getUniform("P"), 1, GL_FALSE, &P[0][0]);
+		glUniformMatrix4fv(weaponShape->getUniform("V"), 1, GL_FALSE, &V[0][0]);
+		glUniform3fv(weaponShape->getUniform("campos"), 1, &mycam.pos[0]);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, Texture2);
+
 		S = glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f)); //scale the bones
-		TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
-		sangle = -3.1415926 / 2.;
+		TransBones = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -15.0f)); //translate the bones back into the combat scene
+		//mat4 TransNew = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, 0.0f));
+		sangle = 3.1415926 / 2.;
 		rotXBones = glm::rotate(glm::mat4(1.0f), sangle, glm::vec3(0, 1, 0)); //rotate the bones
-		M = (*swordMat) * TransBones * rotXBones* S; //swordMat is the pos of the hand
+		M = TransBones* RightSwordMat * rotXBones * S; //put the sword in the hand 
+		//M = RightSwordMat *  rotXBones* S; //swordMat is the pos of the hand
 		glUniformMatrix4fv(weaponShape->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glUniformMatrix4fv(weaponShape->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
 		Realsword->draw(weaponShape, false);
 		weaponShape->unbind();
 		
