@@ -4,7 +4,9 @@ layout(location = 1) in int vertimat;
 uniform mat4 P;
 uniform mat4 V;
 uniform mat4 M;
+uniform vec3 uColor;
 out vec3 vertex_pos;
+
 uniform mat4 Manim[200];
 void main()
 {

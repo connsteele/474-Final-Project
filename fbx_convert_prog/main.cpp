@@ -1266,6 +1266,7 @@ public:
 		bonesprog->addUniform("M");
 		bonesprog->addUniform("Manim");
 		bonesprog->addUniform("campos");
+		bonesprog->addUniform("uColor");
 		bonesprog->addAttribute("vertPos");
 		bonesprog->addAttribute("vertimat");
 
@@ -1735,8 +1736,7 @@ public:
 		int anim_step_width_ms = ms_length / keyframe_length;
 		static float frame = 0;  
 		static float play_anim_t = 0; // interpolation value between 2 different animations
-		int num_animations = 2;
-		int framezerocount = 0;
+		
 		
 		/*************Character type stuff*******************/
 		int anim1, anim2;
@@ -1755,6 +1755,11 @@ public:
 		}
 		anim2 = DODGE_ANIMATION;
 
+		if (activeUnit[0].team == 1) {
+			anim2 = anim1;
+			anim1 = DODGE_ANIMATION;
+		}
+
 		if ((totaltime_untilframe_ms >= anim_step_width_ms) && (curcamPos == 1)) //new condition, only update when you enter the combat sc
 		{
 			totaltime_untilframe_ms = 0;
@@ -1762,11 +1767,10 @@ public:
 			frame += (30.f * frametime);
 		}
 		//if (frame > keyframe_length)  //Catch the end of the current animation
-		if (!root->myplayanimation(frame, RUN_ANIMATION, anim1, play_anim_t))
+		if (!root->myplayanimation(frame, RUN_ANIMATION, anim1, play_anim_t))  //right skeleton
 		{
 			totaltime_untilframe_ms = 0;
 			frame = 0;
-			framezerocount++;
 			anim_num++; //go from animation 0 to 1
 
 			if (anim_num > 1) 
@@ -1779,11 +1783,10 @@ public:
 
 		}
 
-        if (!root2->myplayanimation(frame, RUN_ANIMATION, anim2, play_anim_t))
+        if (!root2->myplayanimation(frame, RUN_ANIMATION, anim2, play_anim_t))  //left skeleton
         {
             totaltime_untilframe_ms = 0;
             frame = 0;
-            framezerocount++;
             anim_num++; //go from animation 0 to 1
 
             if (anim_num > 1)
@@ -1796,9 +1799,6 @@ public:
 
         }
 
-		//root->play_animation(frame,"axisneurontestfile_Avatar00");	//name of current animation, comment out to make code build faster
-		//root->play_animation(frame, "avatar_0_fbx_tmp"); //play back our animation instead of test one 
-		//root->myplayanimation(frame, RUN_ANIMATION, AXE_SWING_ANIMATION, play_anim_t);
 		if (anim_num == 1 && play_anim_t < 1) {
 			play_anim_t += frametime;
 		}
@@ -1878,7 +1878,7 @@ public:
 		////plane->draw(pplane, false);			//render!!!!!!!
 		//pplane->unbind();
 
-
+		
 		//draw the lines for the bones		
 		bonesprog->bind();
 		//send the matrices to the shaders
@@ -1907,6 +1907,8 @@ public:
 		M = TransBones * rotXBones* S;
 		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat[0][0][0]);
+		glUniform3f(bonesprog->getUniform("uColor"), 0.f, 0.f, 1.f);
+		
 		glDrawArrays(GL_LINES, 4, size_stick-4);
 
 		//draw left set of bones
@@ -1916,6 +1918,7 @@ public:
 		S = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)); //scale the bones
 		M = TransBones * rotXBones* S;
 		glUniformMatrix4fv(bonesprog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+		glUniform3f(bonesprog->getUniform("uColor"), 1.f, 0.f, 0.f);
 		glUniformMatrix4fv(bonesprog->getUniform("Manim"), 200, GL_FALSE, &animmat2[0][0][0]);
 		glDrawArrays(GL_LINES, 4, size_stick - 4);
 

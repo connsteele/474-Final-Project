@@ -72,10 +72,10 @@ public:
 
 	bool myplayanimation(float keyframenumber, int animationnum, int animation2num, float f) {
 		float ratio = 1. * animation[animationnum]->keyframes.size() / animation[animation2num]->keyframes.size();
-		if (animation[animationnum]->keyframes.size() - 1 > keyframenumber)
+		if (animation[animationnum]->keyframes.size() - 1> keyframenumber)
 		{
 			bool reset = true;
-			if (keyframenumber >= animation[animationnum]->keyframes.size() - 1) {
+			if (keyframenumber >= animation[animationnum]->keyframes.size() -1) {
 				return false;
 			}
 			float fframe = (float)keyframenumber;
@@ -118,9 +118,6 @@ public:
 				tf = animation[animationnum]->keyframes[mysize].translation;
 			}
 
-            /*if (name == "BVH:reference") {
-                tf = vec3(0, 0, 0);
-            }*/
 
 			mat4 M = mat4(qf);
 			mat4 T = translate(mat4(1), tf);
