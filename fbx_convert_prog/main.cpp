@@ -42,7 +42,7 @@ based on CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #define LANCE_HIT 0.80
 #define LANCE_DMG 3
 #define MAGIC_HIT 0.95
-#define MAGIC_DMG 1
+#define MAGIC_DMG 4
 
 
 using namespace std;
@@ -2453,7 +2453,7 @@ public:
 				for (int j = 0; j < board.characters.size(); j++)
 				{
 					//Check if units have the same postion and are on different teams
-					if ((activeUnit[0].position == board.characters[j].position) && (activeUnit[0].team != board.characters[j].team))
+					if ( (activeUnit[0].position == board.characters[j].position)  && (activeUnit[0].team != board.characters[j].team))
 						//( board.characters[i].name != board.characters[j].name ) ) //Old shit used to be && with the above if
 					{
 						Character* defendingUnit = &board.characters[j];
